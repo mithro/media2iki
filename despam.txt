@@ -1,0 +1,90 @@
+If you've been running a closed wiki and you're sure you have no spam, just skip this page.
+
+On the other hand, if half of your edits were made by spambots, it's time to dump that dreck permanently. Removing all the spam and anti-spam edits reduced my site's total size from 60MB to 20MB and from 2006 edits down to 1272.. My site was almost 1/2 spam if you count edits and, if you count by total volume of each revision, it was 2/3 spam! Spam edits are usually quite large, usually adding around 10K per edit. Defacements, on the other hand, tend to remove more than they add.
+Find the Spam
+
+First, make sure you're working with an exploded directory of revisions. If not, go back to the Translate step.
+
+Now, how can we find spammy edits? A bunch of ways.
+Grep for it
+
+Just look for spam.
+
+   $ grep -r 'v[1il]aga?ra' *
+
+Hunt it and delete it in one step:
+
+   $ grep -lZir pu55y destdir | xargs -0 git rm
+   $ git commit -m "Remove lame pu55y spam."
+
+Check the file sizes
+
+You can see it in the file sizes. For example, the Car page is 4.3K. Spam edits cause it to grow dramatically, revert edits return the page to its original size:
+
+   -rw-r--r-- 1 bronson bronson 4.3K 2007-07-14 09:10 Car-20070714-161051
+   -rw-r--r-- 1 bronson bronson  13K 2007-08-17 07:15 Car-20070817-141555
+   -rw-r--r-- 1 bronson bronson  27K 2007-08-19 09:29 Car-20070819-162947
+   -rw-r--r-- 1 bronson bronson  39K 2007-08-21 09:25 Car-20070821-162517
+   -rw-r--r-- 1 bronson bronson 4.3K 2007-08-21 15:47 Car-20070821-224749
+   -rw-r--r-- 1 bronson bronson  16K 2007-08-23 16:06 Car-20070823-230623
+   -rw-r--r-- 1 bronson bronson  30K 2007-08-25 21:20 Car-20070826-042054
+   -rw-r--r-- 1 bronson bronson 4.3K 2007-08-26 17:04 Car-20070827-000450
+
+All of these edits except for the first one can be removed. Without the spam edits, the revert edits turn into no-ops.
+etc
+
+Please edit this page to add techniques that you find useful.
+
+I played with a few more techniques, like 'find -newer' to bulk delete every revision after a known last-good revision.
+Typical Spam
+
+Here are some of the spammy things I saw.
+Tiny Defacings
+
+As mentioned in the description of the iki-diff-next command, some defacings are tiny:
+
+   ########## changes made by nodes/Git-20071104-065732
+   @@ -1,3 +1,4 @@
+   +ergetorelta
+   This page contains some notes that I took while I was learning git.
+   
+   == Support ==
+
+I also got hit with "varacda", "pastaro" and other nonsense words. Is this just tagging?
+Delete a Lot, Add a Little
+
+You need to also be wary of changesets that delete a lot and add a little.
+
+   -=== Install RadRails ===
+   -
+   -There have been significant improvements since the last RadRails beta so we'll tell Aptana to install the most recent milestone.
+   -
+   -* Window -> Preferences -> Install/Update
+   -* Paste this URL into the Policy URL field: http://update.aptana.com/update/rails/beta/3.2/policy.xml
+   -* Click OK
+   -
+   -Now, close Eclipse's Welcome tab.  You should see the Aptana Start Page (if not, Help -> Aptana Start Page).  At the bottom of the Plugins view you should see "Aptana RadRails".  Click on "install" and let Eclipse restart again.
+   +fhexo mvpz tzvhxjusb jwxslzbm nepjyioz pcdmnt kxwrvqn
+
+I missed this one in the first scan through the file. Except for the last line, it looks like a decent enough edit. If it wasn't accompanied by the comment "aeosxvzlf vszl", I probably would have missed it entirely.
+Spammy Words
+
+Here are some words that were heavily used in spam and hardly appeared at all on my site. Beware, NSFW!
+
+   egrep -ir "interracial|porn|shemale|sex|adderall|nudity| \
+       lviv|cock|adult-|russian|bankruptcy|personals|bondage| \
+       cock|pussy|whore|loacal|cognac|pharma|webcam|spycam| \
+       CoffeeCup" . | less
+
+Also,for some reaon a lot of pages were randomly defaced with "1000" always appearing at the beginning of the line.
+
+   grep -r "^1000"
+
+That showed one or two legitimate pages of course, but it also showed a lot of defacings too.
+Spam Links
+
+If you're worried about spam, it's probably worth looking at all instances of http:// on your site.
+
+   egrep -r "https?://" .
+
+You can instantly recognize most links as good

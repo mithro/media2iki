@@ -1,0 +1,80 @@
+Mediawiki Conversion
+
+This page describes how to transfer Mediawiki content to Git, preserving full history complete with renames. It also shows how to purge spam and other unwanted edits in the process.
+
+Quick Links: Export, Translate, Despam, Git Load
+Introduction
+
+The procedure described here moves the files into Git but it does not convert the Mediawiki markup or change the content of the edits at all. You can do one of two things to fix this:
+
+    * Install the Mediawiki Plugin to allow Ikiwiki to display Mediawiki markup right in your wiki.
+    * Write a script to bulk-convert all mediawiki files to Markdown or whatever markup you desire.
+
+Finially, you might want to scan over the TODO list at the bottom of the page. There are a few features that we don't support yet. Patches welcome!
+Edit Courageously
+
+Thes pages are just some coarse notes that I took while going through this process myself. I'm sure they're crap. Please edit these pages directly to ask questions, make comments, clarify things, whatever.
+Prerequisites
+
+We'll use:
+
+    * Ruby. I used REXML because it's a pretty nice API for working with XML.
+    * LibXML's Ruby bindings because it's a lot faster than REXML
+    * xsltproc because it's even faster
+    * A few GB of disk space (depending on wiki size) for the conversion.
+
+On Debian / Ubuntu:
+
+   $ sudo apt-get install ruby libxml-ruby xsltproc
+
+If you want to display Mediawiki markup in Ikiwiki, you should install the Mediawiki Plugin before following these instructions and make sure it works to your satisfaction.
+Mark Existing Wiki Read-Only
+
+First mark your Mediawiki read-only so nobody loses edits into an obsolete wiki.
+
+    * Add to LocalSettings.php: $wgReadOnlyFile = "read-only"
+    * Create a file named "read-only" in the same directory as LocalSettings.php and fill it with your edit message. Something like, this wiki is being moved and despammed. Editing disabled.
+    * That message only shows up when you try to edit a page. If you want to put a banner at the top of every page, first edit your Mediawiki:Sitenotice special page. Here's an example:
+
+    http://wiki.u32.net/index.php?title=Mediawiki:Sitenotice&action=edit
+
+The Process
+
+If you have a small site and don't want to perform any despamming, you should be able to do the conversion in 20 minutes to an hour. If you have a large site with a lot of spam, despamming can take hours or even days. Definitely comment anywhere the procedure isn't clear.
+
+Follow these steps in order.
+
+   1. Export -- Ask Mediawiki to produce all edits in hundred-megabyte XML files.
+   2. Translate -- Convert page moves, namespaces, etc from Mediawiki conventions to Git/Ikiwiki.
+   3. Despam -- (optional) Delete all history that you don't care to preserve.
+   4. Import -- Sort, reformat, and import into your Git repository.
+
+The Files
+
+Remember that these scripts were written as one-time hacks! They are uuuugly. Well, only iki-fast-load is really ugly, the rest are just expedient.
+
+    * iki-reformat.xsl
+    * iki-sort.xsl
+    * iki-diff-next.rb
+    * iki-fast-load.rb
+    * iki-find-empty-edits.rb
+    * iki-gather-revs.rb
+    * iki-scatter-revs.rb
+    * rename-helper.sh
+
+Thanks
+
+Special thanks to Loye Young who reverted spam off my old wiki a whole bunch of times.
+TODO
+
+    * Push as much of the conversion as possible into the final git repo. Ferinstance, converting Main Page to Main_Page should be done after all the files are imported into Git. Same with doing all the namespace conversions (Category: -> /Category/, User: -> /users/, etc).
+    * Finish the rename-helper script. Hell, renames should probably be done after git-import too.
+    * Make scripts executable and agnostic. (in other words, write xslt command, get rid of .rb, .xslt, etc extensions)
+    * Standardize the arguments. i.e. src should always come before dst. The scripts should probably assume they should start working in the cwd -- don't force them to accept 'node' as an argument (unless that argument represents the source or the destination...)?
+    * Talk:Blah pages should be turned into Blah/Discussion pages.
+    * User:Blah pages should be turned into users/Blah.
+    * Factor renaming "page name" -> "page_name" out of iki-fast-load and into its own script.
+    * Categories should be turned into tags.
+    * Tables? Transclusion? Thumbnails?
+    * Write a script demonstrating how to convert all .mediawiki files to .mdwn or other (for people who don't want to run the mediawiki plugin)
+

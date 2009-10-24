@@ -1,0 +1,107 @@
+Mediawiki Export
+
+Previous Step: Introduction
+Next Step: Translate
+
+This page tells to extract Mediawiki history and store it in large XML files.
+
+What scale of files are we going to be dealing with?
+
+    * my site, only a few hundred pages but lots of spam, resulted in one 60 MB XML file, a few MB of other XML files (like the Images namespace), plus 5 MB of pictures and PDFs. The final Git archive, after despamming, was 6 MB.
+
+    * Another site that I know of, just over a thousand files, resulted in XML files totalling a few hundred MB.
+
+Although the data set is not too huge, you're going to be making multiple copies of it while processing. Make sure to have a few GB free before starting.
+Create the Export List
+
+First, we need to create a list of each page that we want to export, one page per line. No whitespace! Any differences will cause Mediawiki to choke.
+
+There are multiple ways of doing this, and some good ones probably involve bots. Personally, I just used the Special:Allpages page a page that lists every page on your site.
+
+    http://wiki.u32.net/Special:Allpages
+
+Notice that pop-up menu at the top of the page! You need to generate a separate file for each Namespace that you care about. Some important ones:
+
+    * Main
+    * Image (all files and file uploads)
+    * Talk (all discussion pages)
+    * User (personal pages)
+    * Categories
+
+Notice that this is your first opportunity to leave spam behind! For instance, on my site, spam normally landed on discussion pages. After digging through all the discussions, I could find only two that I cared about! Easy to see what to do in this case: move the discussion onto the main page and then ignore the Talk namespace entirely.
+Converting Allpages's 3-column layout to 1 column
+
+Dammit, Special:Allpages page uses a 3-column layout.
+
+   Blog Editing Software     Books           CSS
+   Car                       Car/Fan         Car/Roadster
+   Car/Software              Car/Software2   Car/Todo
+
+We need it in one column:
+
+   Blog Editing Software
+   Books
+   CSS
+   Car
+   Car/Fan
+
+Firefox can copy-and-paste as tab-delimited so, in theory, you should be able to select the page names in Special:Allpages and paste them into a spreadsheet. Then, you just copy the second column, paste it below the first, do the same for the third, save as text, and you're done!
+Brute Force
+
+Whether it's a Firefox or Gnumeric/Openoffice bug, that didn't work for me at all. So, in desperation, here's the brute-force, full-text way of doing it.
+
+    * Open Special:Allpages in Links, the text-mode browser.
+    * "save as formatted",
+    * open the output file in vim
+    * delete all the headers and footers and everything. Only keep the page names.
+    * run these substitutions over the file:
+
+   :%s/^\s*//           # get rid of leading whitespace
+   :%s/\s\s\s\s*/^M/g   # turn all consecutive whitespace into carriage returns
+
+Prefix the Namespaces
+
+Now you should have a list of page names, one file per namespace. Now you need to prefix each name with its namespace. For instance, for the files from the talk namespace, you need to convert:
+
+   Haltek
+   House Hunt
+   LVM
+
+to:
+
+   Talk:Haltek
+   Talk:House Hunt
+   Talk:LVM
+
+This should be trivial in any text editor. In vim, you just open the file and
+
+   :%s/^/Talk:/
+
+Do not prefix pages in the Main namespace with Main: of course. Just leave them as they are.
+Export the Pages
+
+Now we feed the page names to Mediawiki and receive an XML file containing the full history of each page that you named.
+
+    http://wiki.u32.net/Special:Export
+
+Paste a set of files in, hit Export, and go make some tea because this will take a while. When it's done, you should have a gigantic XML file sitting in your browser. Hit Save As and save it as output1.xml.
+
+    * Make sure to uncheck "Include only the current revision"! Otherwise, you won't get any history.
+    * You will probably have to limit the runs to only a hundred or so pages at a time depending on how much history each page contains and what sort of limitations are impost on your server.
+    * Rumor has it that this page will only export the most recent 100 edits, dropping any others. This appears false though: it produced all 308 edits from the KVM page (of which at least 200 are spam). Be careful! Double check that you're getting full history all the way from the first edit.
+
+Do that for all pages and all namespaces, and you should end up with 2-10 multi-tens-of MB files that collectively contain all the history for your entire site.
+Export Images and Files
+
+If you want to import files, make sure to save all the pages from the Images namespace. Also, make a local copy of all the files in your wiki's images directory.
+
+   $ mkdir images
+   $ scp -r me@myhost.com:wiki/images images
+
+NOTE: I think Mediawiki also supports a hashed images directory. My code doesn't deal with that. You can write the code to fix that but, unless you have more than a million files to import, it's easiest to flatten all the files down to a single directory.
+Export Complete!
+
+You should now have all edits for all pages that you care about sitting in a few large XML files, and all images and files that you care about sitting in images.
+TODO
+
+An easier way of exporting huge amounts of data might be mediawikifs? It would not be prone to query timeouts or browsers choking on 100 MB XML files. Could it pull all history too?

@@ -1,0 +1,262 @@
+Mediawiki Translate
+
+Previous Step: Export
+Next Step: Despam
+
+The Mediawiki commits need to be translated into commits suitable for Git and Ikiwiki.
+Flatten the XML
+
+Mediawiki produces XML like
+
+  <mediawiki>
+    <page>
+      <title>first page</title>
+      <revision> <id>1</id> <text>bla</text> </revision>
+      <revision> <id>2</id> <text>bla bla</text> </revision>
+      <revision> <id>3</id> <text>bla bla bla</text> </revision>
+    </page>
+    <page>
+      <title>second page</title>
+      <revision> <id>4</id> <text>fee</text> </revision>
+    </page>
+  </mediawiki>
+   
+
+We need to turn it into a flat list of revisions:
+
+  <mediawiki>
+   <revision> <title>first page</title> <id>1</id> <text>bla</text> </revision>
+   <revision> <title>first page</title> <id>2</id> <text>bla bla</text> </revision>
+   <revision> <title>first page</title> <id>3</id> <text>bla bla bla</text> </revision>
+   <revision> <title>second page</title> <id>4</id> <text>fee</text> </revision>
+  </mediawiki>
+
+Easy enough. Run each of your XML files through iki-reformat:
+
+   $ xsltproc iki-reformat.xsl output1.xml > reformatted1.xml
+   $ xsltproc iki-reformat.xsl output2.xml > reformatted2.xml
+   etc.
+
+Explode Edits into Individual Files
+
+We need to combine all the large XML files into a single ginormous XML file so we can sort it and import it all at once.
+
+One could write an XSLT script that takes multiple XML files as input and produces a single one on output. This is non-standard XSLT though so it becomes somewhat fiddly.
+
+And, since I wanted to dig through and easily rename and delete individual revisions during the translation, it's easiest to just store each revision in its own file instead.
+
+So, call iki-scatter-revs on each of your XML files:
+
+   $ mkdir nodes
+   $ ruby iki-scatter-revs.rb reformatted1.xml nodes
+   $ ruby iki-scatter-revs.rb reformatted2.xml nodes
+   $ ruby iki-scatter-revs.rb reformatted3.xml nodes
+
+Now each revision is contained in its own file, named by revision title and the date it was made.
+
+-rw-r--r-- 1 bronson bronson 4.3K 2007-07-14 09:10 Car-20070714-161051
+-rw-r--r-- 1 bronson bronson  13K 2007-08-17 07:15 Car-20070817-141555
+-rw-r--r-- 1 bronson bronson  27K 2007-08-19 09:29 Car-20070819-162947
+
+Notice that the file's modification time is set to the time of the edit as well. (2007-07-14 09:10:51 PDT is the same as 20070714-161051 GMT). This might come in handy later.
+Use Git!
+
+Definitely check the nodes directory into git! Even if you think you're only going rename a few files, trust me, a temporary git repo makes life a lot nicer.
+
+In the next few steps, you are going to be mass-renaming, mass-deleting, and just smearing around thousands of files. If you screw up and you're using git, you can just roll back and try again. If you screw up and you're not using git, you get to start over from scratch.
+
+Create
+
+   $ cd nodes
+   $ git init
+   $ git add *
+   $ git commit -m "initial commit"
+
+There. Now, as you work, commit as often as you can.
+
+Any time you wonder if there's been a mistake, you can just check the git log and revert any commits you need to do over.
+iki-diff-next
+
+This is a tool that allows you to see the differences between each revision to a file. This allows you to easily see a file change over time.
+
+   $ ruby iki-diff-next.rb KVM*
+
+When you see edits like this:
+
+   ########## changes made by nodes/Git-20071104-065732
+   @@ -1,3 +1,4 @@
+   +ergetorelta
+   This page contains some notes that I took while I was learning git.
+   
+   == Support ==
+
+You know that nodes/Git-20071104-065732 is just a defacement and can be deleted.
+
+TODO: include example output here.
+Purge Spam
+
+This is a big subject that warrants its own page: Mediawiki Despam. Skip it if you're lucky enough that you don't have any spam that you need to purge.
+Handle Talk and Category Pages
+
+TODO: I haven't written a script for this. It should be fairly easy though.
+Handling Move/Renames
+
+Summary: All edits for a file that has been moved in the past are stored under the file's new name. We want to put those early edits back under the file's original name
+
+TODO: write the fully-automated move script so I can move most of the following crap onto another page.
+Move/Rename Theory
+
+When you rename a page, Mediawiki moves all the page history to the new page and turns the old page into a redirect. It leaves an empty edit with a comment of the format "[[Dpkg/Create the Repository]] moved to [[Dpkg/Apt]] " in the new page's edit history at the point of the move.
+
+Most scms will just drop empty edits, regardless of how detailed the comment is. As well they should!
+
+Personally, I think it would make more sense if Mediawiki would just leave leave the old edits at the old node. If they did that, then they could split a page into two or three as well and preserve full history. Simplifying one long page down to multiple smaller ones is a very common task in a wiki. It's a shame that Mediawiki drops the ball here.
+
+Oh well! At least we can clean up behind it. We'll return the old edits to their original locations, restoring wiki history to the way it actually happened. Git should then recognize itself when files are split up and let you watch where the pieces go.
+Find All Renames
+
+This command and prints all commit messages of the format "[[Dpkg/Create the Repository]] moved to [[Dpkg/Apt]] ":
+
+   grep -r '\[\[.*\]\] moved to \[\[.*\]\]' * > moves
+
+You'll notice that there are two entries for each move: one on the old page and one on the new page. The old page is always turned into a redirect to the new page. Therefore, if the above command prints 10 lines, you have 5 renames to handle.
+Sanitize the moves file
+
+Make sure they're all legitimate moves! There's a chance that this expression will match the text on a page, other commits, etc. Just delete lines that aren't actual moves.
+
+Look for non-sensical moves or moves that don't pair up perfectly. For example, I had a single line in my file:
+
+   Dpkg/Postfix Example-20061204-200547: <comment>[[/Postfix Example]] moved to [[Dpkg/Postfix Example]]: Turned on Subpages</comment>
+
+How could that be? The /Postfix Example page [did not exist http://wiki.u32.net/index.php?title=Dpkg/Postfix_Example&action=history] on my site! This must be a Mediawiki bug so I just deleted it.
+
+Finally look for pages being renamed multiple times. You will want to start with the most recent rename and work backward in time, finishing with fixing the very first rename. (I think -- my site didn't have any multiple renames so I didn't actually test this). Re-order the lines in the moves file if necessary.
+Automated Move
+
+It's damned embarrasing that I'm writing this but, because I had less than 10 moves to do, I never took the time to finish the move automation script. To use it, you actually need to edit the variable definitions at the top of the file.
+
+The move script is in rename-helper.sh.
+
+OK, first select a pair of commits from the moves file. Set OLD to to the old name and NEW to the new name.
+
+   OLD="Dpkg/Create the Repository-20061207-202353"
+   NEW="Dpkg/Apt-20061207-202352"
+
+Now, set OLD_BASE and NEW_BASE to be the filenames without the revision date.
+
+   OLD_BASE="Dpkg/Create the Repository"
+   NEW_BASE="Dpkg/Apt"
+
+And, finally, set OLD_ESC_BASE and NEW_ESC_BASE to OLD_BASE and NEW_BASE respectively, but with backslashes escaped so they don't screw up the regular expression (do we need to worry about other regex characters in here too?)
+
+   OLD_ESC_BASE="Dpkg\/Create the Repository"
+   NEW_ESC_BASE="Dpkg\/Apt"
+
+Finally, run the script and it will perform that pair of renames.
+
+TODO: this is really embarrasing. I should write a script that will automatically order the moves in the moves file and then call this script as needed.
+Move Examples
+
+Here are some notes I took while figuring the move out. Feel free to skip them if the above move worked for you.
+The Trivial Case
+
+Here are all the files for the HTML page on my wiki, listed in order from earliest to latest.
+
+   HTML-20060719-070211
+   HTML-20060913-021159
+   HTML-20060930-174922
+   Tools/HTML-20060930-174924	<-- only contains a redirect
+   HTML-20061009-211348
+
+This page was created as "Tools/HTML" back on 19 July 2006. It was edited once, then on 30 Sept 2006 it was renamed to "HTML". Finally, it was edited again on 9 Oct 2006. It's interesting that the rename commits are 2 seconds apart, probably due to some serious server lag.
+
+We want to return those early edits back to Tools/HTML.
+
+   HTML-20060719-070211         <-- rename to Tools/HTML
+   HTML-20060913-021159         <-- rename to Tools/HTML
+   HTML-20060930-174922         <-- OK as is
+   Tools/HTML-20060930-174924   <-- OK as is
+   HTML-20061009-211348         <-- OK as is
+
+This is easy enough to do:
+
+   $ git mv HTML-20060719-070211 Tools/HTML-20060719-070211
+   $ git mv HTML-20060913-021159 Tools/HTML-20060913-021159
+
+Now we'll use iki-diff-next to make sure that the history, both before and after the move, makes sense.
+
+   $ ruby iki-diff-next.rb nodes/Tools/HTML-* | less
+
+    The history should start with the very first edit, should continue with each revision, and it should end with an edit that replaces the entire page with a redirect to the new name.
+
+   $ ruby iki-diff-next.rb nodes/HTML-* | less
+
+    The history should start with the exact same page text as the last edit on the previous node (not counting the redirect), and then continue as normal.
+
+Let's make sure that the revisions before and after the rename actually are equivalent. The last revision under the previous name is Tools/HTML-20060913-021159, and the first revision under the new name is HTML-20060930-174922.
+
+   diff -ub nodes/Tools/HTML-20060913-021159 nodes/HTML-20060930-174922
+   --- nodes/Tools/HTML-20060913-021159    2008-03-12 23:47:25.000000000 -0700
+   +++ nodes/HTML-20060930-174922  2008-03-12 23:47:25.000000000 -0700
+   @@ -1,10 +1,13 @@
+    <revision>
+     <title>HTML</title>
+   - <id>1835</id>
+   - <timestamp>2006-09-13T02:11:59Z</timestamp>
+   + <id>1862</id>
+   + <timestamp>2006-09-30T17:49:22Z</timestamp>
+     <contributor>
+   - <ip>66.160.177.211</ip>
+   + <username>Bronson</username>
+   + <id>2</id>
+     </contributor>
+   + <minor/>
+   + <comment>Tools/HTML moved to HTML</comment>
+     <text xml:space='preserve'>=== How to hide an element ===
+
+     There are two ways to hide an HTML element using CSS:
+
+This shows that the only differences are to the metadata. The text context is identical. The move was successful!
+A More Realiastic Move
+
+This shows how the rename-helper script came about.
+
+The move: Git/git-svn moved to Git-svn
+
+The old file: Git/git-svn-20070920-181338 (only a single file exists, and it consistes of a single redirect)
+
+The new files:
+
+   Git-svn-20070131-084201  Git-svn-20070417-182241  Git-svn-20071001-010606
+   Git-svn-20070131-102818  Git-svn-20070417-190102  Git-svn-20071001-011332
+   Git-svn-20070205-093415  Git-svn-20070418-003631  Git-svn-20071001-035500
+   Git-svn-20070205-093512  Git-svn-20070828-010248  Git-svn-20080225-083635
+   Git-svn-20070205-094050  Git-svn-20070911-224529  Git-svn-20080226-065339
+   Git-svn-20070216-031335  Git-svn-20070920-181338
+   Git-svn-20070216-163932  Git-svn-20070920-181904
+
+You can see that the two matching rename revisions are:
+
+   Git/git-svn-20070920-181338   and   Git-svn-20070920-181338
+
+Therefore, we need to rename all 12 Git-svn edits up to but not including 20070920-181338 to Git/git-svn.
+
+We can find them with:
+
+   OLD=Git/git-svn-20070920-181338
+   NEW=Git-svn-20070920-181338
+   NEW_BASE=Git-svn
+   find . -name "$NEW_BASE-*" \! -newer "$NEW" -and \! -samefile "$NEW" -print
+
+That should print the names of the files to be moved.
+
+rename-helper started as this find statement and slowly became more capable.
+Removing Empty Edits
+
+When removing edits, especially when removing spam, you tend to generate a lot of empty edits. When you remove edits that add the spam, all the edits that removed the spam become no-ops. We don't want those cluttering up our history either.
+
+This script finds and prints the names of all the do-nothing edits it can find.
+
+   $ ruby iki-find-empty-edits.rb nodes
+
+NOTE: if you skipped the fix-renames step above, you'll find an empty edit each time a page was renamed. This is just an artifact of how Mediawiki handles renames and can be safely ignored.
