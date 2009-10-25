@@ -1,0 +1,193 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+<title>Git Import</title>
+
+<link rel="stylesheet" href="sp_data/url.html" type="text/css" target="_top">
+<link rel="stylesheet" href="sp_data/url_002.html" type="text/css" target="_top">
+
+
+</head><body>
+
+<div class="header">
+<span class="title">Git Import</span>
+</div>
+
+<div id="content">
+<p>Previous Step: <a href="Mediawiki_Despam.html" target="_top">Despam</a></p>
+<p>Now that you have all your revisions exported, exploded, and despammed, 
+it's time to combine them back into one XML file and import them into Git.</p>
+<a name="Combine Edits into One XML File" target="_top"></a><h2>Combine Edits into One XML File</h2>
+
+<p>Now, we need to gather the revision files back into a single XML file.</p>
+<pre>   $ cd nodes
+   $ ruby ../<a href="../iki-gather-revs.rb" target="_top">iki-gather-revs.rb</a> &gt; ../combined.xml
+   $ cd ..
+</pre>
+<p>Right now the revisions are sorted by file.
+Sort them by date:</p>
+<pre>   $ xsltproc <a href="../iki-sort.xsl" target="_top">iki-sort.xsl</a> combined.xml &gt; combined-sorted.xml
+</pre>
+<a name="Sanity Check" target="_top"></a><h4>Sanity Check</h4>
+
+<p>Just for a sanity check, re-scatter the file into a new directory
+and verify that it's identical to the original.</p>
+<pre>   $ mkdir nodes-new
+   $ ruby <a href="../iki-scatter-revs.rb" target="_top">iki-scatter-revs.rb</a> combined-sorted.xml nodes-new
+   $ diff -rub nodes nodes-new
+   $ rm -rf nodes-new
+</pre>
+<p>The diff command should produce no output.  If you renamed any nodes,
+however, the diff output will show that their &lt;title&gt;s will 
+correctly have their new names.</p>
+<a name="Sort by Date" target="_top"></a><h2>Sort by Date</h2>
+
+<p>You want to make sure that each revision is fed to git in the order
+it was made:</p>
+<pre>   $ xsltproc <a href="../iki-sort.xsl" target="_top">iki-sort.xsl</a> combined.xml &gt; sorted.xml
+</pre>
+<a name="Fast-Load Into Git" target="_top"></a><h2>Fast-Load Into Git</h2>
+
+<p>iki-fast-load will create a new git repository if one doesn't
+already exist.  It doesn't check for duplication so make sure not
+to load the same repo more than once!</p>
+<pre>   $ mkdir new-repo
+   $ ruby <a href="../iki-fast-load.rb" target="_top">iki-fast-load.rb</a> combined-sorted.xml newrepo
+</pre>
+<p>Now newrepo should contain your mediawiki history.</p>
+<p>You probably will not actually want to create a new repo.  If you've
+already set up ikiwiki, you should just clone the repo that
+ikiwiki created, fast-load into
+that, check to make sure everything looks OK, repack it, and push that
+up.  Easy.</p>
+<pre>   git clone ssh://webadmin@iki.u32.net/var/u32.net-iki/git-repo
+   ruby <a href="../iki-fast-load.rb" target="_top">iki-fast-load.rb</a> Spec5-sorted.xml git-repo
+   git push
+</pre>
+<p>The push uploads and renders the site.  Couldn't be easier!</p>
+<a name="Namespace Warnings" target="_top"></a><h3>Namespace Warnings</h3>
+
+<p>The import script prints each page as it's processed.  This is handy
+for initial runs to make sure that what's happening is exactly what
+you would expect, but the huge amount of output tends to mask warnings.
+I suggest doing the final import with stdout sent to /dev/null:</p>
+<pre>   ruby <a href="../iki-fast-load.rb" target="_top">iki-fast-load.rb</a> Spec5-sorted.xml newrepo &gt; /dev/null
+</pre>
+<p>Now you'll be able to see the namespace warnings.  For instance,
+some of my pages had links like:</p>
+<pre>   [[http://url]]
+</pre>
+<p>That was obviously mean to be this:</p>
+<pre>   [http://url]
+</pre>
+<p>This will be flagged as an unknown "http:" namespace.
+You can either go back and fix this, or ignore it and
+fix it in ikiwiki.</p>
+<a name="Filename Conversions" target="_top"></a><h3>Filename Conversions</h3>
+
+<p>Unfortunately, ikiwiki 
+<a title="http://ikiwiki.info/bugs/Spaces_in_link_text_for_ikiwiki_links/" href="http://ikiwiki.info/bugs/Spaces_in_link_text_for_ikiwiki_links/" target="_top">does not handle</a> filenames with spaces
+in them (a strange limitation in this modern age).
+Therefore, the fast load script changes all the spaces into underscores.</p>
+<p>If your commits aren't destined for Ikiwiki, you probably want
+to turn this misfeature off.  Just comment out this line from
+the script:</p>
+<pre>   title.gsub!(" ", "_")
+</pre>
+<p>set it to:</p>
+<pre>   # title.gsub!(" ", "_")
+</pre>
+<a name="Partial Loads" target="_top"></a><h3>Partial Loads</h3>
+
+<p>iki-fast-load works just fine incrementally.  If you split your revisions
+into separate files by year (a good way to make the filesizes more
+manageable), you could do this:</p>
+<pre>   ruby <a href="../iki-fast-load.rb" target="_top">iki-fast-load.rb</a> 2006.xml newrepo
+   ruby <a href="../iki-fast-load.rb" target="_top">iki-fast-load.rb</a> 2007.xml newrepo
+</pre>
+<p>Just make sure to load all revisions chronologically,
+from oldest to newest.</p>
+<a name="Repack the Repo" target="_top"></a><h3>Repack the Repo</h3>
+
+<p>Finally, repack your repo.  TODO: you can probably skip this step.</p>
+<p>NOTE: Er, despite the recommendations on git-fast-import's help,
+this doesn't seem to make any difference.  Maybe that's because
+we do our entire import in a single g-f-i run?  No idea.
+Run 'git help fast-import' and search on repack to read for yourself.</p>
+<pre>   git repack -a -d
+   git gc --prune  # make absolutely sure nobody else is using this repo!
+</pre>
+<p>Adding --window=50 might take longer, but it could also produce
+a smaller repo.  If you can spare the CPU time, it's probably worth
+it.  See the discussion on repacking in the help for 'git fast-import'.</p>
+<a name="Rebuild Ikiwiki" target="_top"></a><h2>Rebuild Ikiwiki</h2>
+
+<a name="Correct Last Edited time" target="_top"></a><h3>Correct Last Edited time</h3>
+
+<p>Notice that each file's Last Edited time has today's date, not
+the date that it was last edited in Mediawiki.  This is bad because
+it makes the site look a whole lot fresher than it really is.</p>
+<p>No problem, just pass --getctime the first time you rebuild your wiki.
+It takes longer but all your files then have the correct
+Last Edited date.</p>
+<pre>  $ ikiwiki --verbose --rebuild --setup iki.setup --getctime
+</pre>
+<p>This doesn't set the correct creation date however. The new files
+will appear to be created on the same day they were last edited.</p>
+<a name="Correct Creation and Last Edited time" target="_top"></a><h3>Correct Creation and Last Edited time</h3>
+
+<p>We need to get both the page creation AND the last modified date right.
+To do that, we need to build ikiwiki in two steps.
+First get rid of your Ikiwiki's <a title="http://ikiwiki.info/tips/inside_dot_ikiwiki/" href="http://ikiwiki.info/tips/inside_dot_ikiwiki/" target="_top">.index</a>.</p>
+<pre>  mv .index /tmp
+</pre>
+<p>Set the mtime of every file in the repo to the file's creation date.
+Note: takes a long time to run, probably due to all the forking. If
+your site has tens of thousands of pages, you might want to convert
+this into a Perl script or C program.</p>
+<pre>$ git ls-tree -r -z --name-only HEAD | xargs -0 -n 1 -I {} sh -c \
+      'touch --date="$(git log --reverse --pretty="format:%aD" HEAD -- {} | head -1)" {}'
+</pre>
+<p>That command just asks Git for a list of files in the repo and
+passes them to xargs. xargs then touches each file with the time
+returned by git log.</p>
+<p>Now rebuild your wiki (<em>without</em> --getctime because getctime will set both the file's creation date and its modification date).</p>
+<pre>$ ikiwiki --verbose --rebuild --setup iki.setup
+</pre>
+<p>Now the creation date of each file in the wiki is correct. You can
+verify this by creating an "All Pages" page with the following content:</p>
+<pre>  All Pages on this wiki in order from newest to oldest:
+  [[!inline  pages="* and !*/Discussion" archive="yes"]]
+</pre>
+<p>But the modification time for each file is wrong. No problem. We
+just update the mtime on each file to the date of the last checkin.</p>
+<pre>  $ git ls-tree -r -z --name-only HEAD | xargs -0 -n 1 -I {} sh -c \
+      'touch --date="$(git log -1 --pretty="format:%aD" HEAD -- {})" {}'
+</pre>
+<p>And rebuild again.</p>
+<pre>$ ikiwiki --verbose --rebuild --setup iki.setup
+</pre>
+<p>This updates the Last Edited time but leaves the creation time alone.  And now both dates in the index are correct!</p>
+<a name="All Done!" target="_top"></a><h2>All Done!</h2>
+
+<p>All your Mediawiki content is now stored in ikiwiki.
+If you haven't made edits on these pages telling how to do things
+easier or fixing bugs then please go back and help make it easier others!</p>
+
+</div>
+
+<div id="footer">
+<div id="pageinfo">
+
+
+
+
+
+</div>
+
+<!-- from home -->
+</div>
+
+</td></tr></tbody></table>
+
+</body></html>

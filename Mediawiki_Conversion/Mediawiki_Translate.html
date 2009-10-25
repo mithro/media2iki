@@ -1,0 +1,333 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+<title>Mediawiki Translate</title>
+
+<link rel="stylesheet" href="sp_data/url_002.html" type="text/css" target="_top">
+<link rel="stylesheet" href="sp_data/url.html" type="text/css" target="_top">
+
+
+</head><body>
+
+<div class="header">
+<span class="title">Mediawiki Translate</span>
+</div>
+
+<div id="content">
+<p>Previous Step: <a href="Mediawiki_Export.html" target="_top">Export</a><br>
+Next Step: <a href="Mediawiki_Despam.html" target="_top">Despam</a></p>
+<p>The Mediawiki commits need to be translated into commits suitable
+for Git and Ikiwiki.</p>
+<a name="Flatten the XML" target="_top"></a><h2>Flatten the XML</h2>
+
+<p>Mediawiki produces XML like</p>
+<pre>  &lt;mediawiki&gt;
+    &lt;page&gt;
+      &lt;title&gt;first page&lt;/title&gt;
+      &lt;revision&gt; &lt;id&gt;1&lt;/id&gt; &lt;text&gt;bla&lt;/text&gt; &lt;/revision&gt;
+      &lt;revision&gt; &lt;id&gt;2&lt;/id&gt; &lt;text&gt;bla bla&lt;/text&gt; &lt;/revision&gt;
+      &lt;revision&gt; &lt;id&gt;3&lt;/id&gt; &lt;text&gt;bla bla bla&lt;/text&gt; &lt;/revision&gt;
+    &lt;/page&gt;
+    &lt;page&gt;
+      &lt;title&gt;second page&lt;/title&gt;
+      &lt;revision&gt; &lt;id&gt;4&lt;/id&gt; &lt;text&gt;fee&lt;/text&gt; &lt;/revision&gt;
+    &lt;/page&gt;
+  &lt;/mediawiki&gt;
+   
+</pre>
+<p>We need to turn it into a flat list of revisions:</p>
+<pre>  &lt;mediawiki&gt;
+   &lt;revision&gt; &lt;title&gt;first page&lt;/title&gt; &lt;id&gt;1&lt;/id&gt; &lt;text&gt;bla&lt;/text&gt; &lt;/revision&gt;
+   &lt;revision&gt; &lt;title&gt;first page&lt;/title&gt; &lt;id&gt;2&lt;/id&gt; &lt;text&gt;bla bla&lt;/text&gt; &lt;/revision&gt;
+   &lt;revision&gt; &lt;title&gt;first page&lt;/title&gt; &lt;id&gt;3&lt;/id&gt; &lt;text&gt;bla bla bla&lt;/text&gt; &lt;/revision&gt;
+   &lt;revision&gt; &lt;title&gt;second page&lt;/title&gt; &lt;id&gt;4&lt;/id&gt; &lt;text&gt;fee&lt;/text&gt; &lt;/revision&gt;
+  &lt;/mediawiki&gt;
+</pre>
+<p>Easy enough.  Run each of your XML files through <a href="../iki-reformat.xsl" target="_top">iki-reformat</a>:</p>
+<pre>   $ xsltproc <a href="../iki-reformat.xsl" target="_top">iki-reformat.xsl</a> output1.xml &gt; reformatted1.xml
+   $ xsltproc <a href="../iki-reformat.xsl" target="_top">iki-reformat.xsl</a> output2.xml &gt; reformatted2.xml
+   etc.
+</pre>
+<a name="Explode Edits into Individual Files" target="_top"></a><h2>Explode Edits into Individual Files</h2>
+
+<p>We need to combine all the large XML files into a single ginormous
+XML file so we can sort it and import it all at once.</p>
+<p>One could write an XSLT script that takes multiple XML files as input
+and produces a single one on output.  This is non-standard XSLT though
+so it becomes somewhat fiddly.</p>
+<p>And, since I wanted to dig through and easily rename and delete 
+individual revisions during the translation, it's easiest
+to just store each revision in its own file instead.</p>
+<p>So, call <a href="../iki-scatter-revs.rb" target="_top">iki-scatter-revs</a> on each of your XML files:</p>
+<pre>   $ mkdir nodes
+   $ ruby <a href="../iki-scatter-revs.rb" target="_top">iki-scatter-revs.rb</a> reformatted1.xml nodes
+   $ ruby <a href="../iki-scatter-revs.rb" target="_top">iki-scatter-revs.rb</a> reformatted2.xml nodes
+   $ ruby <a href="../iki-scatter-revs.rb" target="_top">iki-scatter-revs.rb</a> reformatted3.xml nodes
+</pre>
+<p>Now each revision is contained in its own file, named by revision title
+and the date it was made.</p>
+<pre>-rw-r--r-- 1 bronson bronson 4.3K 2007-07-14 09:10 Car-20070714-161051
+-rw-r--r-- 1 bronson bronson  13K 2007-08-17 07:15 Car-20070817-141555
+-rw-r--r-- 1 bronson bronson  27K 2007-08-19 09:29 Car-20070819-162947
+</pre>
+<p>Notice that the file's modification time is set to the time
+of the edit as well.  (2007-07-14 09:10:51 PDT is the same as 
+20070714-161051 GMT).  This might come in handy later.</p>
+<a name="Use Git!" target="_top"></a><h2>Use Git!</h2>
+
+<p>Definitely check the nodes directory into git!
+Even if you think you're only going
+rename a few files, trust me, a temporary git repo makes life a lot nicer.</p>
+<p>In the next few steps, you are going to be mass-renaming, mass-deleting,
+and just smearing around thousands of files.  If you screw up and
+you're using git, you can just roll back and try again.  If you 
+screw up and you're not using git, you get to start over from scratch.</p>
+<p>Create </p>
+<pre>   $ cd nodes
+   $ git init
+   $ git add *
+   $ git commit -m "initial commit"
+</pre>
+<p>There.  Now, as you work, commit as often as you can.</p>
+<p>Any time you wonder if there's been a mistake, you can just check the
+git log and revert any commits you need to do over.</p>
+<a name="iki-diff-next" target="_top"></a><h2>iki-diff-next</h2>
+
+<p>This is a tool that allows you to see the differences
+between each revision to a file.  This allows you to
+easily see a file change over time.</p>
+<pre>   $ ruby <a href="../iki-diff-next.rb" target="_top">iki-diff-next.rb</a> KVM*
+</pre>
+<p>When you see edits like this:</p>
+<pre>   ########## changes made by nodes/Git-20071104-065732
+   @@ -1,3 +1,4 @@
+   +ergetorelta
+   This page contains some notes that I took while I was learning git.
+   
+   == Support ==
+</pre>
+<p>You know that nodes/Git-20071104-065732 is just a defacement and
+can be deleted.</p>
+<p>TODO: include example output here.</p>
+<a name="Purge Spam" target="_top"></a><h2>Purge Spam</h2>
+
+<p>This is a big subject that warrants its own page: <a href="Mediawiki_Despam.html" target="_top">Mediawiki Despam</a>.
+Skip it if you're lucky enough that you don't have any spam that you need
+to purge.</p>
+<a name="Handle Talk and Category Pages" target="_top"></a><h2>Handle Talk and Category Pages</h2>
+
+<p>TODO: I haven't written a script for this.  It should be
+fairly easy though.</p>
+<a name="Handling Move/Renames" target="_top"></a><h2>Handling Move/Renames</h2>
+
+<p>Summary: All edits for a file that has been moved in the past are
+stored under the file's new name.
+We want to put those early edits back under the file's original name</p>
+<p>TODO: write the fully-automated move script so I can move most of the following crap onto another page.</p>
+<a name="Move/Rename Theory" target="_top"></a><h3>Move/Rename Theory</h3>
+
+<p>When you rename a page, Mediawiki moves all the page history to the new
+page and turns the old page into a redirect.  It leaves an empty edit
+with a comment of the format "[[Dpkg/Create the Repository]] moved
+to [[Dpkg/Apt]]
+" in the new page's edit history at the point
+of the move.</p>
+<p>Most scms will just drop empty edits, regardless of how detailed the
+comment is.  As well they should!</p>
+<p>Personally, I think it would make more sense if Mediawiki would just
+leave leave the old edits at the old node.  If they did that, then
+they could split a page into two or three as well and preserve
+full history.  Simplifying one long page down to multiple smaller ones is a
+very common task in a wiki.  It's a shame that Mediawiki drops
+the ball here.</p>
+<p>Oh well!  At least we can clean up behind it.
+We'll return the old edits to their original locations, restoring wiki
+history to the way it actually happened.
+Git should then recognize itself when files are split up and
+let you watch where the pieces go.</p>
+<a name="Find All Renames" target="_top"></a><h3>Find All Renames</h3>
+
+<p>This command and prints all commit messages of the format
+"[[Dpkg/Create the Repository]] moved to [[Dpkg/Apt]]
+":</p>
+<pre>   grep -r '\[\[.*\]\] moved to \[\[.*\]\]' * &gt; moves
+</pre>
+<p>You'll notice that there are two entries for each move: one on the old
+page and one on the new page.  The old page is always turned into
+a redirect to the new page.  Therefore, if the above command prints 10
+lines, you have 5 renames to handle.</p>
+<a name="Sanitize the moves file" target="_top"></a><h4>Sanitize the moves file</h4>
+
+<p>Make sure they're all legitimate moves!  There's a chance that
+this expression will match the text on a page, other commits, etc.
+Just delete lines that aren't actual moves.</p>
+<p>Look for non-sensical moves or moves that don't pair up
+perfectly.  For example, I had a single line in my file:</p>
+<pre>   Dpkg/Postfix Example-20061204-200547: &lt;comment&gt;[[/Postfix Example]] moved to [[Dpkg/Postfix Example]]: Turned on Subpages&lt;/comment&gt;
+</pre>
+<p>How could that be?  The /Postfix Example page
+[did not exist <a title="http://wiki.u32.net/index.php?title=Dpkg/Postfix_Example&amp;action=history" href="http://wiki.u32.net/index.php%3Ftitle%3DDpkg/Postfix_Example%26action%3Dhistory" target="_top">http://wiki.u32.net/index.php?title=Dpkg/Postfix_Example&amp;action=history</a>] on my site!  This must be a Mediawiki bug so I just deleted it.</p>
+<p>Finally look for pages being renamed multiple times.
+You will want to start with the most recent rename and
+work backward in time, finishing with fixing the very first rename.
+(I think -- my site didn't have any multiple renames so I didn't
+actually test this).  Re-order the lines in the moves file if
+necessary.</p>
+<a name="Automated Move" target="_top"></a><h3>Automated Move</h3>
+
+<p>It's damned embarrasing that I'm writing this but, because I had
+less than 10 moves to do, I never took the time to finish the
+move automation script.  To use it, you actually
+need to edit the variable definitions at the top of the file.</p>
+<p>The move script is in <a href="../rename-helper.sh" target="_top">rename-helper.sh</a>.</p>
+<p>OK, first select a pair of commits from the moves file.
+Set OLD to to the old name and NEW to the new name.</p>
+<pre>   OLD="Dpkg/Create the Repository-20061207-202353"
+   NEW="Dpkg/Apt-20061207-202352"
+</pre>
+<p>Now, set OLD_BASE and NEW_BASE to be the filenames without the revision date.</p>
+<pre>   OLD_BASE="Dpkg/Create the Repository"
+   NEW_BASE="Dpkg/Apt"
+</pre>
+<p>And, finally, set OLD_ESC_BASE and NEW_ESC_BASE to OLD_BASE and
+NEW_BASE respectively, but with backslashes escaped so they
+don't screw up the regular expression (do we need to worry about
+other regex characters in here too?)</p>
+<pre>   OLD_ESC_BASE="Dpkg\/Create the Repository"
+   NEW_ESC_BASE="Dpkg\/Apt"
+</pre>
+<p>Finally, run the script and it will perform that pair of renames.</p>
+<p>TODO: this is really embarrasing.  I should write a script that will
+automatically order the moves in the moves file and then call this script
+as needed.</p>
+<a name="Move Examples" target="_top"></a><h3>Move Examples</h3>
+
+<p>Here are some notes I took while figuring the move out.  Feel free
+to skip them if the above move worked for you.</p>
+<a name="The Trivial Case" target="_top"></a><h4>The Trivial Case</h4>
+
+<p>Here are all the files for the HTML page on my wiki, listed
+in order from earliest to latest.</p>
+<pre>   HTML-20060719-070211
+   HTML-20060913-021159
+   HTML-20060930-174922
+   Tools/HTML-20060930-174924	&lt;-- only contains a redirect
+   HTML-20061009-211348
+</pre>
+<p>This page was created as "Tools/HTML" back on 19 July 2006.  It was
+edited once, then on 30 Sept 2006 it was renamed to "HTML".
+Finally, it was edited again on 9 Oct 2006.  It's interesting that
+the rename commits are 2 seconds apart, probably due to some serious
+server lag.</p>
+<p>We want to return those early edits back to Tools/HTML.</p>
+<pre>   HTML-20060719-070211         &lt;-- rename to Tools/HTML
+   HTML-20060913-021159         &lt;-- rename to Tools/HTML
+   HTML-20060930-174922         &lt;-- OK as is
+   Tools/HTML-20060930-174924   &lt;-- OK as is
+   HTML-20061009-211348         &lt;-- OK as is
+</pre>
+<p>This is easy enough to do:</p>
+<pre>   $ git mv HTML-20060719-070211 Tools/HTML-20060719-070211
+   $ git mv HTML-20060913-021159 Tools/HTML-20060913-021159
+</pre>
+<p>Now we'll use iki-diff-next to make sure that the history,
+both before and after the move, makes sense.</p>
+<pre>   $ ruby iki-diff-next.rb nodes/Tools/HTML-* | less
+</pre>
+<dl>
+<dd>The history should start with the very first edit, should continue
+with each revision, and it should end with an edit that replaces the
+entire page with a redirect to the new name.</dd>
+</dl>
+<pre>   $ ruby iki-diff-next.rb nodes/HTML-* | less
+</pre>
+<dl>
+<dd>The history should start with the exact same page text as the last
+edit on the previous node (not counting the redirect), and then
+continue as normal.</dd>
+</dl>
+<p>Let's make sure that the revisions before and after the rename
+actually are equivalent. The last revision under the previous name is
+Tools/HTML-20060913-021159, and the first revision under the new name
+is HTML-20060930-174922.</p>
+<pre>   diff -ub nodes/Tools/HTML-20060913-021159 nodes/HTML-20060930-174922
+   --- nodes/Tools/HTML-20060913-021159    2008-03-12 23:47:25.000000000 -0700
+   +++ nodes/HTML-20060930-174922  2008-03-12 23:47:25.000000000 -0700
+   @@ -1,10 +1,13 @@
+    &lt;revision&gt;
+     &lt;title&gt;HTML&lt;/title&gt;
+   - &lt;id&gt;1835&lt;/id&gt;
+   - &lt;timestamp&gt;2006-09-13T02:11:59Z&lt;/timestamp&gt;
+   + &lt;id&gt;1862&lt;/id&gt;
+   + &lt;timestamp&gt;2006-09-30T17:49:22Z&lt;/timestamp&gt;
+     &lt;contributor&gt;
+   - &lt;ip&gt;66.160.177.211&lt;/ip&gt;
+   + &lt;username&gt;Bronson&lt;/username&gt;
+   + &lt;id&gt;2&lt;/id&gt;
+     &lt;/contributor&gt;
+   + &lt;minor/&gt;
+   + &lt;comment&gt;<a href="../../HTML." target="_top">HTML</a>&lt;/comment&gt;
+     &lt;text xml:space='preserve'&gt;=== How to hide an element ===
+</pre>
+<pre>     There are two ways to hide an HTML element using CSS:
+</pre>
+<p>This shows that the only differences are to the metadata.
+The text context is identical.  The move was successful!</p>
+<a name="A More Realiastic Move" target="_top"></a><h4>A More Realiastic Move</h4>
+
+<p>This shows how the rename-helper script came about.</p>
+<p>The move: <a href="../../Git-svn." target="_top">Git-svn</a></p>
+<p>The old file: Git/git-svn-20070920-181338
+(only a single file exists, and it consistes of a single redirect)</p>
+<p>The new files:</p>
+<pre>   Git-svn-20070131-084201  Git-svn-20070417-182241  Git-svn-20071001-010606
+   Git-svn-20070131-102818  Git-svn-20070417-190102  Git-svn-20071001-011332
+   Git-svn-20070205-093415  Git-svn-20070418-003631  Git-svn-20071001-035500
+   Git-svn-20070205-093512  Git-svn-20070828-010248  Git-svn-20080225-083635
+   Git-svn-20070205-094050  Git-svn-20070911-224529  Git-svn-20080226-065339
+   Git-svn-20070216-031335  Git-svn-20070920-181338
+   Git-svn-20070216-163932  Git-svn-20070920-181904
+</pre>
+<p>You can see that the two matching rename revisions are:</p>
+<pre>   Git/git-svn-20070920-181338   and   Git-svn-20070920-181338
+</pre>
+<p>Therefore, we need to rename all 12 Git-svn edits up to but not
+including 20070920-181338 to Git/git-svn.</p>
+<p>We can find them with:</p>
+<pre>   OLD=Git/git-svn-20070920-181338
+   NEW=Git-svn-20070920-181338
+   NEW_BASE=Git-svn
+   find . -name "$NEW_BASE-*" \! -newer "$NEW" -and \! -samefile "$NEW" -print
+</pre>
+<p>That should print the names of the files to be moved.</p>
+<p>rename-helper started as this find statement and slowly became more capable.</p>
+<a name="Removing Empty Edits" target="_top"></a><h2>Removing Empty Edits</h2>
+
+<p>When removing edits, especially when removing spam, you tend to generate
+a lot of empty edits.  When you remove edits that add the spam,
+all the edits that removed the spam become no-ops.  We don't want
+those cluttering up our history either.</p>
+<p>This script finds and prints the names of all the do-nothing edits it can find.</p>
+<pre>   $ ruby <a href="../iki-find-empty-edits.rb" target="_top">iki-find-empty-edits.rb</a> nodes
+</pre>
+<p>NOTE: if you skipped the fix-renames step above, you'll find an empty edit
+each time a page was renamed.  This is just an artifact of how Mediawiki
+handles renames and can be safely ignored.</p>
+
+</div>
+
+<div id="footer">
+<div id="pageinfo">
+
+
+
+
+
+</div>
+
+<!-- from home -->
+</div>
+
+</td></tr></tbody></table>
+
+</body></html>

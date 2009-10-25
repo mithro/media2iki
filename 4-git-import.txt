@@ -1,0 +1,139 @@
+Git Import
+
+Previous Step: Despam
+
+Now that you have all your revisions exported, exploded, and despammed, it's time to combine them back into one XML file and import them into Git.
+Combine Edits into One XML File
+
+Now, we need to gather the revision files back into a single XML file.
+
+   $ cd nodes
+   $ ruby ../iki-gather-revs.rb > ../combined.xml
+   $ cd ..
+
+Right now the revisions are sorted by file. Sort them by date:
+
+   $ xsltproc iki-sort.xsl combined.xml > combined-sorted.xml
+
+Sanity Check
+
+Just for a sanity check, re-scatter the file into a new directory and verify that it's identical to the original.
+
+   $ mkdir nodes-new
+   $ ruby iki-scatter-revs.rb combined-sorted.xml nodes-new
+   $ diff -rub nodes nodes-new
+   $ rm -rf nodes-new
+
+The diff command should produce no output. If you renamed any nodes, however, the diff output will show that their <title>s will correctly have their new names.
+Sort by Date
+
+You want to make sure that each revision is fed to git in the order it was made:
+
+   $ xsltproc iki-sort.xsl combined.xml > sorted.xml
+
+Fast-Load Into Git
+
+iki-fast-load will create a new git repository if one doesn't already exist. It doesn't check for duplication so make sure not to load the same repo more than once!
+
+   $ mkdir new-repo
+   $ ruby iki-fast-load.rb combined-sorted.xml newrepo
+
+Now newrepo should contain your mediawiki history.
+
+You probably will not actually want to create a new repo. If you've already set up ikiwiki, you should just clone the repo that ikiwiki created, fast-load into that, check to make sure everything looks OK, repack it, and push that up. Easy.
+
+   git clone ssh://webadmin@iki.u32.net/var/u32.net-iki/git-repo
+   ruby iki-fast-load.rb Spec5-sorted.xml git-repo
+   git push
+
+The push uploads and renders the site. Couldn't be easier!
+Namespace Warnings
+
+The import script prints each page as it's processed. This is handy for initial runs to make sure that what's happening is exactly what you would expect, but the huge amount of output tends to mask warnings. I suggest doing the final import with stdout sent to /dev/null:
+
+   ruby iki-fast-load.rb Spec5-sorted.xml newrepo > /dev/null
+
+Now you'll be able to see the namespace warnings. For instance, some of my pages had links like:
+
+   [[http://url]]
+
+That was obviously mean to be this:
+
+   [http://url]
+
+This will be flagged as an unknown "http:" namespace. You can either go back and fix this, or ignore it and fix it in ikiwiki.
+Filename Conversions
+
+Unfortunately, ikiwiki does not handle filenames with spaces in them (a strange limitation in this modern age). Therefore, the fast load script changes all the spaces into underscores.
+
+If your commits aren't destined for Ikiwiki, you probably want to turn this misfeature off. Just comment out this line from the script:
+
+   title.gsub!(" ", "_")
+
+set it to:
+
+   # title.gsub!(" ", "_")
+
+Partial Loads
+
+iki-fast-load works just fine incrementally. If you split your revisions into separate files by year (a good way to make the filesizes more manageable), you could do this:
+
+   ruby iki-fast-load.rb 2006.xml newrepo
+   ruby iki-fast-load.rb 2007.xml newrepo
+
+Just make sure to load all revisions chronologically, from oldest to newest.
+Repack the Repo
+
+Finally, repack your repo. TODO: you can probably skip this step.
+
+NOTE: Er, despite the recommendations on git-fast-import's help, this doesn't seem to make any difference. Maybe that's because we do our entire import in a single g-f-i run? No idea. Run 'git help fast-import' and search on repack to read for yourself.
+
+   git repack -a -d
+   git gc --prune  # make absolutely sure nobody else is using this repo!
+
+Adding --window=50 might take longer, but it could also produce a smaller repo. If you can spare the CPU time, it's probably worth it. See the discussion on repacking in the help for 'git fast-import'.
+Rebuild Ikiwiki
+Correct Last Edited time
+
+Notice that each file's Last Edited time has today's date, not the date that it was last edited in Mediawiki. This is bad because it makes the site look a whole lot fresher than it really is.
+
+No problem, just pass --getctime the first time you rebuild your wiki. It takes longer but all your files then have the correct Last Edited date.
+
+  $ ikiwiki --verbose --rebuild --setup iki.setup --getctime
+
+This doesn't set the correct creation date however. The new files will appear to be created on the same day they were last edited.
+Correct Creation and Last Edited time
+
+We need to get both the page creation AND the last modified date right. To do that, we need to build ikiwiki in two steps. First get rid of your Ikiwiki's .index.
+
+  mv .index /tmp
+
+Set the mtime of every file in the repo to the file's creation date. Note: takes a long time to run, probably due to all the forking. If your site has tens of thousands of pages, you might want to convert this into a Perl script or C program.
+
+$ git ls-tree -r -z --name-only HEAD | xargs -0 -n 1 -I {} sh -c \
+      'touch --date="$(git log --reverse --pretty="format:%aD" HEAD -- {} | head -1)" {}'
+
+That command just asks Git for a list of files in the repo and passes them to xargs. xargs then touches each file with the time returned by git log.
+
+Now rebuild your wiki (without --getctime because getctime will set both the file's creation date and its modification date).
+
+$ ikiwiki --verbose --rebuild --setup iki.setup
+
+Now the creation date of each file in the wiki is correct. You can verify this by creating an "All Pages" page with the following content:
+
+  All Pages on this wiki in order from newest to oldest:
+  [[!inline  pages="* and !*/Discussion" archive="yes"]]
+
+But the modification time for each file is wrong. No problem. We just update the mtime on each file to the date of the last checkin.
+
+  $ git ls-tree -r -z --name-only HEAD | xargs -0 -n 1 -I {} sh -c \
+      'touch --date="$(git log -1 --pretty="format:%aD" HEAD -- {})" {}'
+
+And rebuild again.
+
+$ ikiwiki --verbose --rebuild --setup iki.setup
+
+This updates the Last Edited time but leaves the creation time alone. And now both dates in the index are correct!
+All Done!
+
+All your Mediawiki content is now stored in ikiwiki. If you haven't made edits on these pages telling how to do things easier or fixing bugs then please go back and help make it easier others!

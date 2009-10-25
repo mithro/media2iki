@@ -1,0 +1,134 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+<title>Mediawiki Despam</title>
+
+<link rel="stylesheet" href="sp_data/url.html" type="text/css" target="_top">
+<link rel="stylesheet" href="sp_data/url_002.html" type="text/css" target="_top">
+
+
+</head><body>
+
+<div class="header">
+<span class="title">Mediawiki Despam</span>
+</div>
+
+<div id="content">
+<p>Previous Step:<a href="Mediawiki_Translate.html" target="_top">Translate</a><br>
+Next Step: <a href="Git_Import.html" target="_top">Load</a></p>
+<p>If you've been running a closed wiki and you're sure you have no spam, just skip this page.</p>
+<p>On the other hand, if half of your edits were made by spambots, it's
+time to dump that dreck permanently.
+Removing all the spam and anti-spam edits reduced my site's
+total size from 60MB to 20MB and from 2006 edits down to 1272..
+My site was almost 1/2 spam if you count edits and, if you count by total volume of each revision, it was 2/3 spam!
+Spam edits are usually quite large, usually adding around 10K per edit.
+Defacements, on the other hand, tend to remove more than they add.</p>
+<a name="Find the Spam" target="_top"></a><h2>Find the Spam</h2>
+
+<p>First, make sure you're working with an exploded directory of revisions.  If not, go back to the Translate step.</p>
+<p>Now, how can we find spammy edits?  A bunch of ways.</p>
+<a name="Grep for it" target="_top"></a><h4>Grep for it</h4>
+
+<p>Just look for spam.</p>
+<pre>   $ grep -r 'v[1il]aga?ra' *
+</pre>
+<p>Hunt it and delete it in one step:</p>
+<pre>   $ grep -lZir pu55y destdir | xargs -0 git rm
+   $ git commit -m "Remove lame pu55y spam."
+</pre>
+<a name="Check the file sizes" target="_top"></a><h4>Check the file sizes</h4>
+
+<p>You can see it in the file sizes.  For example, the Car page is 4.3K.
+Spam edits cause it to grow dramatically, revert edits return the
+page to its original size:</p>
+<pre>   -rw-r--r-- 1 bronson bronson 4.3K 2007-07-14 09:10 Car-20070714-161051
+   -rw-r--r-- 1 bronson bronson  13K 2007-08-17 07:15 Car-20070817-141555
+   -rw-r--r-- 1 bronson bronson  27K 2007-08-19 09:29 Car-20070819-162947
+   -rw-r--r-- 1 bronson bronson  39K 2007-08-21 09:25 Car-20070821-162517
+   -rw-r--r-- 1 bronson bronson 4.3K 2007-08-21 15:47 Car-20070821-224749
+   -rw-r--r-- 1 bronson bronson  16K 2007-08-23 16:06 Car-20070823-230623
+   -rw-r--r-- 1 bronson bronson  30K 2007-08-25 21:20 Car-20070826-042054
+   -rw-r--r-- 1 bronson bronson 4.3K 2007-08-26 17:04 Car-20070827-000450
+</pre>
+<p><em>All</em> of these edits except for the first one can be removed.  Without
+the spam edits, the revert edits turn into no-ops.</p>
+<a name="etc" target="_top"></a><h3>etc</h3>
+
+<p>Please edit this page to add techniques that you find useful.</p>
+<p>I played with a few more techniques, like 'find -newer' to bulk
+delete every revision after a known last-good revision.</p>
+<a name="Typical Spam" target="_top"></a><h2>Typical Spam</h2>
+
+<p>Here are some of the spammy things I saw.</p>
+<a name="Tiny Defacings" target="_top"></a><h3>Tiny Defacings</h3>
+
+<p>As mentioned in the description of the iki-diff-next command,
+some defacings are tiny:</p>
+<pre>   ########## changes made by nodes/Git-20071104-065732
+   @@ -1,3 +1,4 @@
+   +ergetorelta
+   This page contains some notes that I took while I was learning git.
+   
+   == Support ==
+</pre>
+<p>I also got hit with "varacda", "pastaro" and other nonsense words.
+Is this just tagging?</p>
+<a name="Delete a Lot, Add a Little" target="_top"></a><h3>Delete a Lot, Add a Little</h3>
+
+<p>You need to also be wary of changesets that delete a lot and add a little.</p>
+<pre>   -=== Install RadRails ===
+   -
+   -There have been significant improvements since the last RadRails beta so we'll tell Aptana to install the most recent milestone.
+   -
+   -* Window -&gt; Preferences -&gt; Install/Update
+   -* Paste this URL into the Policy URL field: <a title="http://update.aptana.com/update/rails/beta/3.2/policy.xml" href="http://update.aptana.com/update/rails/beta/3.2/policy.xml" target="_top">http://update.aptana.com/update/rails/beta/3.2/policy.xml</a>
+   -* Click OK
+   -
+   -Now, close Eclipse's Welcome tab.  You should see the Aptana Start Page (if not, Help -&gt; Aptana Start Page).  At the bottom of the Plugins view you should see "Aptana RadRails".  Click on "install" and let Eclipse restart again.
+   +fhexo mvpz tzvhxjusb jwxslzbm nepjyioz pcdmnt kxwrvqn
+</pre>
+<p>I missed this one in the first scan through the file.
+Except for the last line, it looks like a decent enough edit.
+If it wasn't accompanied by the comment "aeosxvzlf vszl",
+I probably would have missed it entirely.</p>
+<a name="Spammy Words" target="_top"></a><h3>Spammy Words</h3>
+
+<p>Here are some words that were heavily used in spam and hardly
+appeared at all on my site.  Beware, NSFW!</p>
+<pre>   egrep -ir "interracial|porn|shemale|sex|adderall|nudity| \
+       lviv|cock|adult-|russian|bankruptcy|personals|bondage| \
+       cock|pussy|whore|loacal|cognac|pharma|webcam|spycam| \
+       CoffeeCup" . | less
+</pre>
+<p>Also,for some reaon a lot of pages were randomly defaced with "1000"
+always appearing at the beginning of the line.</p>
+<pre>   grep -r "^1000"
+</pre>
+<p>That showed one or two legitimate pages of course, but it also showed a
+lot of defacings too.</p>
+<a name="Spam Links" target="_top"></a><h3>Spam Links</h3>
+
+<p>If you're worried about spam, it's probably worth looking at
+all instances of <a title="http://" href="http://" target="_top">http://</a> on your site.</p>
+<pre>   egrep -r "https?://" .
+</pre>
+<p>You can instantly recognize most links as good</p>
+
+</div>
+
+<div id="footer">
+<div id="pageinfo">
+
+
+
+
+
+</div>
+
+<!-- from home -->
+</div>
+
+</td></tr></tbody></table>
+
+</body></html>
