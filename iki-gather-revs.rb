@@ -26,7 +26,8 @@ def process(entry)
       doc.root.elements["title"].text = name
    end
 
-   doc.write($stdout, 2)
+   bar = REXML::Formatters::Default.new
+   bar.write(doc, $stdout)
 end
 
 

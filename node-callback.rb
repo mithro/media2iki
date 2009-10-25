@@ -1,10 +1,13 @@
-require 'xml'
+#!/usr/bin/env ruby
 
-def parse_node(infile, nodetype, callback, extra)
+#require 'xml'
+require 'rexml/document'
 
-	parser, parser.string = XML::Parser.new, xml
-	doc, posts = parser.parse, []
-	doc.find('//'+nodetype).each do |node|
-		callback(node)
-  	end
+
+def parse_node(infile, xpath, callback, extra)
+    doc = REXML::Document.new File.new(infile)
+
+	nodes = doc.elements.each(xpath) do |node|
+		callback.call(node)
+	end
 end

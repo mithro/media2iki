@@ -23,7 +23,7 @@ require 'fileutils' # for mkdir_p
 
 
 def parse_revision(dir, node)
-   elements = node.root.elements
+   elements = node.elements
 
    title = elements["title"].text
    timestamp = Time.parse(elements["timestamp"].text)
@@ -33,7 +33,8 @@ def parse_revision(dir, node)
    File.open(filename, "a") { |f|
       # node.write is supposed to re-indent the document.
       # Too bad it doesn't.  I should have used libxml.
-      node.write(f, 2)
+      bar = REXML::Formatters::Default.new
+      bar.write(node, f)
       f << "\n"
    }
    # Make each file have the same modification date as its edit time.
@@ -45,7 +46,7 @@ end
 throw "You must supply the name of the file to parse!" unless infile = ARGV[0]
 throw "You must supply the name of the directory to fill!" unless outdir = ARGV[1]
 
-parse_node(infile, 'revision', 
+parse_node(infile, 'mediawiki/revision', 
    proc { |rev| parse_revision(outdir, rev)},
    {:compress_whitespace => %w{revision contributor}}
    )

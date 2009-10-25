@@ -18,7 +18,7 @@
 
 
 require 'rubygems'
-#require 'node-callback'
+require 'node-callback'
 require 'time'
 require 'ostruct'
 
@@ -93,18 +93,24 @@ end
 #    <username>Bronson</username><id>2</id>
 
 def parse_revision(node, basedir)
-   elements = node.root.elements
-
-   if false
-      # Enable this to show the node we're processing
-      puts "\n\n############"
-      node.write($stdout, 2)
-   end
+   elements = node.elements
 
    title = elements["title"].text
    text = elements["text"].text
+
+   if not text
+      text = ""
+   end
+
    timestamp = Time.parse(elements["timestamp"].text)
    # we'll ignore Mediawiki's minor flag; it seems to be useless.
+
+   if true
+      # Enable this to show the node we're processing
+      puts "\n\n############"
+	  puts title
+	  puts timestamp
+   end
 
 
    # ikiwiki uses two commit message formats:
@@ -128,7 +134,6 @@ def parse_revision(node, basedir)
    throw "User can't contain a colon: #{message}" if message =~ /:/
 
    message += (elements["comment"] ? ": " + elements["comment"].text : "")
-
 
    # Fix up the Image namespace.
    if title =~ /^Image:(.*)$/
@@ -197,7 +202,7 @@ IO.popen("git fast-import --date-format=rfc2822 --quiet", "w") do |pipe|
       fields.email = email
       format_git_commit(pipe, fields)
    }
-   parse_node(infile, 'revision', nodeproc,
+   parse_node(infile, 'mediawiki/revision', nodeproc,
       {:compress_whitespace => %w{revision contributor}})
 end
 
