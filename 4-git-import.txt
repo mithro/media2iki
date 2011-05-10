@@ -29,13 +29,13 @@ Sort by Date
 
 You want to make sure that each revision is fed to git in the order it was made:
 
-   $ xsltproc iki-sort.xsl combined.xml > sorted.xml
+   $ xsltproc iki-sort.xsl combined.xml > combined-sorted.xml
 
 Fast-Load Into Git
 
 iki-fast-load will create a new git repository if one doesn't already exist. It doesn't check for duplication so make sure not to load the same repo more than once!
 
-   $ mkdir new-repo
+   $ mkdir newrepo
    $ ruby iki-fast-load.rb combined-sorted.xml newrepo
 
 Now newrepo should contain your mediawiki history.

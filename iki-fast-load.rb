@@ -65,9 +65,9 @@ end
 
 def imgurl(file)
    # If you want to store all files in another dir, uncomment this line:
-   #return "images/" + file
+   return "images/" + file
    # By default we store all files in the root directory.
-   return file
+   #return file
 end
 
 
@@ -136,12 +136,13 @@ def parse_revision(node, basedir)
    message += (elements["comment"] ? ": " + elements["comment"].text : "")
 
    # Fix up the Image namespace.
-   if title =~ /^Image:(.*)$/
+   if title =~ /^(Image|File|Media):(.*)$/
       # Load the file directly into this commit rather than just referring to it.
-      title = imgurl($1)
+      title = imgurl($2)
       text = read_file("#{basedir}/images/#{title.gsub(' ', '_')}")
    else
       # Fix the Image namespace
+      text.gsub!('[[File:', '[['+imgurl(""))
       text.gsub!('[[Image:', '[['+imgurl(""))
       text.gsub!('[[Media:', '[['+imgurl(""))
       # And warn if we see any other weird namespaces in here.
