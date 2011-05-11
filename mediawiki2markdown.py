@@ -99,10 +99,6 @@ class BaseConverter(object):
     table = []
     table_width = 0
     table_column_widths = []
-    print node
-    print node.caption
-    print node.vlist
-    print node.children
     for row in node.children:
       if len(row.children) > table_width:
         table_width = len(row.children)
