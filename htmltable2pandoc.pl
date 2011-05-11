@@ -86,6 +86,7 @@ use Encode qw/decode encode/;
 use Getopt::Long;
 use Regexp::Common qw/balanced/;
 use Text::FormatTable;
+use Data::Dumper;
 
 # Option variables
 my $help = 0;
@@ -217,10 +218,9 @@ sub table2markdown {
     my ($caption,$colcount,@table) = html2AoA($html);
 
     # Create a format for Text::FormatTable
-    my $format = "l$colsep" x $colcount;
+    my $format = " l$colsep|" x $colcount;
     # Remove trailing space(s)
-    $format =~ s/\s+$//;
-
+    $format =~ s/$colsep\|$//;
     # Create a 'format' for the head rule.
 
     # Text::FormatTable has no notion of anything
@@ -254,44 +254,60 @@ sub table2markdown {
     # Build up the table in the Text::FormatTable object.
 
     # Add the headrule
-    $tabobj->row(@headrule);
+    #$tabobj->row(@headrule);
 
     # Add the top row of dashes
-    $tabobj->rule('-');
+    #$tabobj->rule('-');
 
     # Step through the table data array of arrays
     # adding each row in turn
     for my $row (@table){
 
-        # Add the row content
-        $tabobj->row(@$row);
+	my $header = 0;
+	my @cells;
+        for my $cell (@$row) {
+		push(@cells, $cell->{content});
+		$header = ($cell->{type} eq 'th' || $header);
+		
+	}
+	if ($header == 1) {
+	        $tabobj->head(@cells);
+		$tabobj->rule('-');
+
+	} else {
+	        $tabobj->row(@cells);
+	}
 
         # Add an empty Text::FormatTable 'rule'
         # corresponding to the inter-row empty line
         # of the Pandoc multiline table.
-        $tabobj->rule('');
+	#$tabobj->rule('');
     }
     # Add the footer row of dashes
-    $tabobj->rule('-');
+    #$tabobj->rule('-');
 
     # Render the table with Text::FormatTable
-    my $tabstring = $tabobj->render($width);
+    my $tabstring = $tabobj->render(10e3);
 
-    # Get our placeholder headrule
-    $tabstring =~ s{^([\-\ ]+)\n}{};
-    my $headrule = $1;
-    # Convert our placeholder headrule to one Pandoc
-    # will understand.
-    # Find each instance of a hyphen followed by
-    # one or more spaces up to a space followed
-    # by a hyphen and replace the found spaces
-    # with hyphens, i.e. convert
-    #    ^-      -      -      -     $
-    # into
-    #    ^------ ------ ------ ------$
-    $headrule =~ s[(- +?)(?=$colsep-|$)][ '-' x length($1) ]eg;
-    # Insert the expanded headrule after the first row.
-    $tabstring =~ s/\n\n/\n$headrule\n/;
+    $tabstring =~ s/-\+-/ | /g;
+    $tabstring =~ s/^\+-/| /mg;
+    $tabstring =~ s/-\+$/ |/mg;
+
+#    # Get our placeholder headrule
+#    $tabstring =~ s{^([\-\ ]+)\n}{};
+#    my $headrule = $1;
+#    # Convert our placeholder headrule to one Pandoc
+#    # will understand.
+#    # Find each instance of a hyphen followed by
+#    # one or more spaces up to a space followed
+#    # by a hyphen and replace the found spaces
+#    # with hyphens, i.e. convert
+#    #    ^-      -      -      -     $
+#    # into
+#    #    ^------ ------ ------ ------$
+#    $headrule =~ s[(- +?)(?=$colsep-|$)][ '-' x length($1) ]eg;
+#    # Insert the expanded headrule after the first row.
+#    $tabstring =~ s/\n\n/\n$headrule\n/; 
     # Add the caption if any
     if($caption){ return "\n$tabstring\nTable: $caption\n" }
     else { return "\n$tabstring\n" }
@@ -320,13 +336,13 @@ sub html2AoA {
         # Convert the row/array item into an empty array ref
         $row = [];
         # Find each HTML td/th span and extract its data
-        $tmp =~ s{<t[hd]\b([^>]*)>(.*?)</t[hd]>}{
-            my($attr,$content) = ($1,$2);
+        $tmp =~ s{<(t[hd])\b([^>]*)>(.*?)</t[hd]>}{
+            my($attr,$content) = ($2,$3);
             # Get colspan and rowspan
             my($colspan,$rowspan) = (1,1);
-            if($attr and $attr =~ /colspan=(['"])(\d+)\1/i){ $colspan = $2 }
-            if($attr and $attr =~ /rowspan=(['"])(\d+)\1/i){ $rowspan = $2 }
-            push @$row, { colspan => $colspan, rowspan => $rowspan, content => $content };
+            if($attr and $attr =~ /colspan=(['"])(\d+)\1/i){ $colspan = $3 }
+            if($attr and $attr =~ /rowspan=(['"])(\d+)\1/i){ $rowspan = $3 }
+            push @$row, { colspan => $colspan, rowspan => $rowspan, content => $content, type => $1 };
         }egs;
     }
 
@@ -341,7 +357,7 @@ sub html2AoA {
             if($cell->{colspan} > 1){
                 # If the cell has a colspan > 1 add the
                 # appropriate number of empty cells to its right.
-                my @fill = ({ rowspan => $cell->{rowspan}, colspan => 0, content => '' }) x ($cell->{colspan} - 1);
+                my @fill = ({ rowspan => $cell->{rowspan}, colspan => 0, content => '', type => $cell->{type} }) x ($cell->{colspan} - 1);
                 push @tmp, @fill;
             }
         }
@@ -361,12 +377,8 @@ sub html2AoA {
             my $rowspan = $table[$row]->[$cell]->{rowspan};
             while($rowspan > 1){
                 $rowspan--;
-                splice @{$table[$row+$rowspan]}, $cell,0,{content => '', rowspan => 0};
+                splice @{$table[$row+$rowspan]}, $cell,0,{content => '', rowspan => 0, type => $cell->{type}};
             }
-            # Now we can turn the cell value into a scalar
-            # containing the content, since the span values
-            # aren't needed anymore.
-            $table[$row]->[$cell] = $table[$row]->[$cell]->{content};
         }
         # If the current row is longer than the longest
         # row seen so far increase $collongth accordingly
@@ -376,7 +388,7 @@ sub html2AoA {
     # Pad to rowlength, if necessary
     for my $row (@table){
         if($#$row < $collength){
-            $$row[$collength] = '';
+            $$row[$collength] = {content => '', rowspan => 0, type => $row->[0]{type}};
         }
     }
 
