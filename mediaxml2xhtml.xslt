@@ -34,7 +34,7 @@
 	<xsl:apply-templates />
 </xsl:template>
 
-<xsl:template match="/articles/article">
+<xsl:template match="article">
 <html>
 <head>
 	<title><xsl:value-of select="@title" /></title>
@@ -66,6 +66,9 @@
 	</xsl:choose>
 </xsl:template>
 
+<xsl:template match="preline">
+	<pre><xsl:apply-templates /></pre>
+</xsl:template>
 <xsl:template match="paragraph">
 	<p><xsl:apply-templates /></p>
 </xsl:template>
@@ -78,10 +81,48 @@
 		<xsl:when test="@type = bullet">
 		<ul><xsl:apply-templates/></ul>
 		</xsl:when>
+		<xsl:when test="@type = def">
+		<dl><xsl:apply-templates/></dl>
+		</xsl:when>
+		<xsl:when test="@type = ident">
+		<dl><xsl:apply-templates/></dl>
+		</xsl:when>
 		<xsl:otherwise>
 		<ul><xsl:apply-templates/></ul>
 		</xsl:otherwise>
 	</xsl:choose>
+</xsl:template>
+
+<xsl:template match="tr">
+<tr><xsl:apply-templates /></tr>
+</xsl:template>
+
+<xsl:template match="th">
+<th><xsl:apply-templates /></th>
+</xsl:template>
+
+<xsl:template match="td">
+<td><xsl:apply-templates /></td>
+</xsl:template>
+
+<xsl:template match="caption">
+<caption><xsl:apply-templates /></caption>
+</xsl:template>
+
+<xsl:template match="table">
+<table><xsl:apply-templates /></table>
+</xsl:template>
+
+<xsl:template match="tablerow">
+<tr><xsl:apply-templates /></tr>
+</xsl:template>
+
+<xsl:template match="tablehead">
+<th><xsl:apply-templates /></th>
+</xsl:template>
+
+<xsl:template match="tablecell">
+<td><xsl:apply-templates /></td>
 </xsl:template>
 
 <xsl:template match="listitem">
@@ -119,6 +160,20 @@
 			<xsl:text disable-output-escaping="yes">&lt;/a&gt;</xsl:text>
 		</xsl:otherwise>
 	</xsl:choose>
+</xsl:template>
+<xsl:template match="image">
+                      <xsl:text disable-output-escaping="yes">&lt;img src="/</xsl:text>
+                      <xsl:apply-templates select="source"/>
+                      <xsl:text disable-output-escaping="yes">" styles="</xsl:text>
+                        <xsl:for-each select="child::part[position()&lt;last()]">
+                          <xsl:apply-templates />
+                          <xsl:text disable-output-escaping="yes"> </xsl:text>
+                        </xsl:for-each>
+                      <xsl:text disable-output-escaping="yes">" alt="</xsl:text>
+                        <xsl:for-each select="child::part[position()=last()]">
+                          <xsl:apply-templates />
+                        </xsl:for-each>
+                      <xsl:text disable-output-escaping="yes">" /&gt;</xsl:text>
 </xsl:template>
 
 <xsl:template match="target">
