@@ -8,8 +8,7 @@
 find -type f -name \*.mediawiki | while read i; do
   NAME=`echo $i | sed -e's/.mediawiki$//'`
   echo "Converting $NAME.mediawiki -> $NAME.md"
-  echo python mediawiki2markdown.py $NAME.mediawiki > $NAME.md
-  echo "Done!"
+  python mediawiki2markdown.py $NAME.mediawiki > $NAME.md
+  echo "Done"
   echo
-  sleep 1
 done

@@ -8,7 +8,7 @@ import cStringIO as StringIO
 
 import sys
 
-DEBUG = True
+DEBUG = sys.stdout.isatty() and sys.stdin.isatty()
 def debugger():
   if DEBUG:
     import traceback, pdb
@@ -35,7 +35,10 @@ class BaseConverter(object):
 
   def parse_node(self, node):
     try:
-      getattr(self, 'on_'+(node.tagname or node.__class__.__name__.lower()).replace('@',''))(node)
+      tagname = 'on_'+str(node.tagname).replace('@', '')
+      classname = 'on_'+node.__class__.__name__.lower().replace('@', '')
+      f = getattr(self, tagname, getattr(self, classname, None))
+      f(node)
     except AttributeError, e:
       sys.stderr.write('Unknown node: '+(node.tagname or node.__class__.__name__.lower()))
       debugger()
@@ -47,15 +50,20 @@ class BaseConverter(object):
       self.parse_node(child)
 
   on_node = parse_children
-  on_article = parse_children
+
+  def on_article(self, node):
+    self.parse_children(node)
+    self.produce_dls()
 
   def on_ol(self, node):
     self.listmode.append('order')
+    self.append('\n')
     self.parse_children(node)
     self.listmode.pop(-1)
 
   def on_ul(self, node):
     self.listmode.append('unorder')
+    self.append('\n')
     self.parse_children(node)
     self.listmode.pop(-1)
 
@@ -73,8 +81,18 @@ class BaseConverter(object):
     elif node.caption == ':':
       # If not part of an definition list, it's an indent...
       if not hasattr(self, 'dls'):
-        self.append(" "*4*len(node.caption))
-        self.parse_children(node)
+        parser = MarkdownConverter()
+        parser.parse_children(node)
+        output = parser.getvalue()
+
+        lines = []
+        for line in output.split('\n'):
+          if line:
+            lines.append("> "*len(node.caption)+line)
+          else:
+            lines.append(line)
+        self.append("\n".join(lines))
+
       else:
         self.dls.append(node)
 
@@ -86,8 +104,17 @@ class BaseConverter(object):
     elif node.caption == "''":
       self.on_italics(node)
 
+    # underline
+    elif node.caption == "u":
+      self.on_underline(node)
+
     else:
       assert False, "Unknown style: %s" % node.caption
+
+  def on_underline(self, node):
+    self.append("<u>")
+    self.parse_children(node)
+    self.append("</u>")
 
   # Ignore category links as we don't have anything similar
   def on_categorylink(self, node):
@@ -97,9 +124,16 @@ class BaseConverter(object):
     table_cell_parser = self.__class__()
 
     table = []
+    table_caption = ""
     table_width = 0
     table_column_widths = []
     for row in node.children:
+      if isinstance(row, nodes.Caption):
+        table_cell_parser.parse_children(row)
+        output = table_cell_parser.getvalue()
+        table_caption += output
+        continue
+
       if len(row.children) > table_width:
         table_width = len(row.children)
         while len(table_column_widths) < table_width:
@@ -115,14 +149,15 @@ class BaseConverter(object):
 
         cells.append({'node': cell, 'rendered': cell_data})
 
-      while len(cells) < table_width:
-        cells.append('')
-
       table.append({'rowtype': row,
                     'celltype': row.children[-1],
                     'cells': cells})
 
-    self.on_process_table(table_column_widths, table)
+    for row in table:
+      while len(row['cells']) < table_width:
+        row['cells'].append({'rendered': ''})
+
+    self.on_process_table(table_caption, table_column_widths, table)
 
 
 class HTMLConverter(BaseConverter):
@@ -143,11 +178,48 @@ class HTMLConverter(BaseConverter):
     self.parse_children(node)
     self.append("</strong>")
 
+  def on_url(self, node):
+    parser = HTMLConverter()
+    parser.parse_children(node)
+    output = parser.getvalue()
+
+    if not output:
+      output = node.caption
+
+    self.append("<a href='%s'>%s</a>" % (
+        node.caption.replace(' ', '_'), output))
+
+  on_namedurl = on_url
+
+  def on_imagelink(self, node):
+    self.append("<img src='%s' alt='%s' />'" % (
+        node.target.replace('Image:', '').replace(' ', '_'), node.asText()))
+
+  def on_articlelink(self, node):
+    for i in ['jpg', 'png', 'gif']:
+      if node.target.endswith(i):
+        self.on_imagelink(node)
+        break
+    else:
+      self.append("<a href='%s'>%s</a>" % (
+          node.caption.replace(' ', '_'), node.caption))
+
+  def on_namespacelink(self, node):
+    for i in ['jpg', 'png', 'gif']:
+      if node.target.endswith(i):
+        self.on_imagelink(node)
+        break
+    else:
+      node.caption = node.target
+      self.on_url(node)
+
   def on_p(self, node):
     self.append("<p>")
     self.parse_children(node)
     self.append("</p>")
+    self.produce_dls()
 
+  def produce_dls(self):
     # We need to specially handle defintion lists
     if hasattr(self, "dls"):
       self.append("<dl>\n")
@@ -168,24 +240,11 @@ class HTMLConverter(BaseConverter):
       self.append("</dl>\n")
     self.append('\n')
 
-  def on_namedurl(self, node):
-    self.append("<a href='%s'>" % node.caption)
-    self.append(node.children[0].asText().strip())
-    self.append("</a>")
-
-  def on_imagelink(self, node):
-    self.append("<img src='%s' alt='%s' />'" % (
-        node.asText(), node.target.replace('Image:', '')))
-
-  def on_articlelink(self, node):
-    self.append("<a href='/%s'>%s</a>" % (node.target, node.target))
-
   def on_section(self, node):
     self.append("\n")
     self.append("<h%i>" % node.level)
     self.parse_node(node.children[0])
     self.append("</h%i>" %node.level)
-    self.append("\n")
     for child in node.children[1:]:
       self.parse_node(child)
 
@@ -202,23 +261,43 @@ class MarkdownConverter(BaseConverter):
     sys.stdout = ast_str
     ast = simpleparse(text)
     sys.stdout = sys_stdout
-    #print ast_str.getvalue()
+    sys.stderr.write(ast_str.getvalue())
     self.parse_node(ast)
 
   def on_preformatted(self, node):
-    self.append('\n<pre>')
-    self.append(node.asText())
-    self.append('</pre>\n')
+    parser = MarkdownConverter()
+    parser.parse_children(node)
+    output = parser.getvalue()
+
+    lines = []
+    for line in output.split('\n'):
+      if line:
+        lines.append("    "+line)
+      else:
+        lines.append(line)
+    self.append("\n".join(lines))
 
   def on_pre(self, node):
-    self.append('\n<pre>')
-    for child in node.children:
-      self.append(child.asText())
-    self.append('</pre>\n')
+    parser = HTMLConverter()
+    parser.parse_children(node)
+    output = parser.getvalue()
+    self.append('<pre>%s</pre>\n' % output)
+
+  def on_code(self, node):
+    self.append('`')
+    self.parse_children(node)
+    self.append('`')
+
+  def on_tt(self, node):
+    self.append('<tt>')
+    self.parse_children(node)
+    self.append('</tt>')
 
   def on_p(self, node):
     self.parse_children(node)
+    self.produce_dls()
 
+  def produce_dls(self):
     if hasattr(self, "dls"):
       self.append("<dl>\n")
 
@@ -257,23 +336,40 @@ class MarkdownConverter(BaseConverter):
       self.parse_node(child)
       self.append('\n')
 
-  def on_namedurl(self, node):
-    self.append("[")
-    #self.parse_children(node)
-    self.append(node.children[0].asText().strip())
-    self.append("](%s)" % node.caption)
+  def on_url(self, node):
+    parser = MarkdownConverter()
+    parser.parse_children(node)
+    output = parser.getvalue().strip()
+
+    if not output:
+      self.append("<%s>" % node.caption)
+    else:
+      self.append("[")
+      self.append(output)
+      self.append("](%s)" % node.caption)
+
+  on_namedurl = on_url
 
   def on_imagelink(self, node):
     self.append('![%s](%s)' % (
-        node.asText(), node.target.replace('Image:', '')))
+        node.asText(), node.target.replace('Image:', '').replace(' ', '_')))
 
   def on_articlelink(self, node):
-    self.append("[%s](/%s)" % (node.target, node.target))
+    for i in ['jpg', 'png', 'gif']:
+      if node.target.endswith(i):
+        self.on_imagelink(node)
+        break
+    else:
+      self.append("[%s](/%s)" % (node.target, node.target.replace(' ', '_')))
 
   def on_namespacelink(self, node):
-    self.append("[")
-    self.parse_children(node)
-    self.append("](%s)" % node.target.replace(' ', '_'))
+    for i in ['jpg', 'png', 'gif']:
+      if node.target.endswith(i):
+        self.on_imagelink(node)
+        break
+    else:
+      node.caption = node.target.replace(' ', '_')
+      self.on_url(node)
 
   def on_section(self, node):
     self.append("\n")
@@ -285,17 +381,36 @@ class MarkdownConverter(BaseConverter):
       self.parse_node(child)
 
   def on_li(self, node):
-    listmode = {'order': '1.', 'unorder': '+'}
-    self.append(' '*(len(self.listmode)-1) + listmode[self.listmode[-1]])
-    self.parse_children(node)
+    listmode = {'order': '1.', 'unorder': '*'}
+
+    parser = MarkdownConverter()
+    parser.parse_children(node)
+    output = parser.getvalue().split('\n')
+
+    indent = '    '*(len(self.listmode)-1)
+
+    lines = ["%s%s %s" % (
+        indent, listmode[self.listmode[-1]], output[0].lstrip())]
+    for line in output[1:]:
+      if line:
+        lines.append("%s  %s" % (indent, line.lstrip()))
+      else:
+        lines.append(line)
+
+    self.append("\n".join(lines))
 
   def on_tagnode(self, node):
     if node.caption == 'hr':
-      self.append('-'*75)
+      self.append('-'*75+'\n')
+    elif node.caption == 'br':
+      self.append('<br>')
     else:
       assert False, "Unknown tag %s %s" % (node, node.caption)
 
-  def on_process_table(self, widths, rows):
+  def on_process_table(self, caption, widths, rows):
+    if caption:
+      self.append('### %s ###\n' % caption)
+
     # Insert a dummy header if one doesn't exist
     if rows[0]['celltype'].tagname != 'th':
       fakenode = nodes.Node()
@@ -305,30 +420,43 @@ class MarkdownConverter(BaseConverter):
                       'celltype': fakenode,
                       'cells': [{'node': fakenode, 'rendered': ''}]*len(widths)})
 
+    header = rows[0]
     for row in rows:
       line = '| '
+      divider = '| '
       for i, cell in enumerate(row['cells']):
-        line += cell['rendered'].strip().ljust(widths[i])
+        headernode = header['cells'][i].get('node', None)
+        if headernode:
+          align = headernode.vlist.get('align', 'left')
+        else:
+          align = 'left'
+
+        width = widths[i]
+
+        if align == 'right':
+          f = unicode(cell['rendered'], 'utf-8').strip().rjust
+          divider += '-'*(width-1) + ':'
+        elif align == 'center' or align == 'centre':
+          f = unicode(cell['rendered'], 'utf-8').strip().center
+          divider += ':' + '-'*(width-2) + ':'
+        elif align == 'left':
+          f = unicode(cell['rendered'], 'utf-8').strip().ljust
+          divider += '-'*width
+        else:
+          assert False, 'Unknown alignment %s (%s)' % (cell['align'], cell)
+
+        line += f(widths[i])
         line += ' | '
+        divider += ' | '
+
       self.append(line[:-2])
       self.append('\n')
 
       if row['celltype'].tagname == 'th':
-        divider = '| '
-        for i, width in enumerate(widths):
-          alignment = row['cells'][i]['node'].vlist.get('align', 'left')
-          if alignment == 'left':
-            divider += '-'*width
-          elif alignment == 'center' or alignment == 'centre':
-            divider += ':' + '-'*(width-2) + ':'
-          elif alignment == 'right':
-            divider += '-'*(width-1) + ':'
-          else:
-            assert False, 'Unknown alignment %s (%s)' % (
-                alignment, rows['cells'][i])
-          divider += ' | '
         self.append(divider[:-2])
         self.append('\n')
+
+        header = row
 
 
 def main(infile=None):
