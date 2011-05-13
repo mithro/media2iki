@@ -1,0 +1,12 @@
+You can ''italicize text'' by putting 2
+apostrophes on ''each'' side.
+
+3 apostrophes will '''embolden the text'''.
+
+5 apostrophes will '''embolden''' and ''italicize''
+'''''the text'''''.
+
+(Using 4 apostrophes doesn't do anything
+special -- <br /> the last pair are just
+''''left over ones'''' that are included
+as part of the text.)

@@ -1,0 +1,8 @@
+You should "sign" your comments
+on talk pages:
+- Three tildes gives your
+signature: ~~~
+- Four tildes give your
+signature plus date/time: ~~~~
+- Five tildes gives the
+date/time alone: ~~~~~

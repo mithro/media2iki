@@ -1,0 +1,28 @@
+
+Put text in a <tt>typewriter
+font</tt>. The same font is
+generally used for <code>
+computer code</code>.
+
+<strike>Strike out</strike>
+or <u>underline</u> text,
+or write it <span style=
+"font-variant:small-caps">
+in small caps</span>.
+
+Superscripts and subscripts:
+X<sup>2</sup>, H<sub>2</sub>O
+
+<center>Centered text</center>
+* Please note the American spelling of "center".
+
+<blockquote>
+The '''blockquote''' command ''formats'' block
+quotations, typically by surrounding them
+with whitespace and a slightly different font.
+</blockquote>
+
+Invisible comments to editors (<!-- -->)
+appear only while editing the page.
+<!-- Note to editors: blah blah blah. -->
+

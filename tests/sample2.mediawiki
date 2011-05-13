@@ -1,0 +1,14 @@
+A single newline
+generally has no effect on the layout.
+These can be used to separate
+sentences within a paragraph.
+Some editors find that this aids editing
+and improves the ''diff'' function
+(used internally to compare
+different versions of a page).
+
+But an empty line
+starts a new paragraph.
+
+When used in a list, a newline ''does''
+affect the layout ([[#lists|see below]]).

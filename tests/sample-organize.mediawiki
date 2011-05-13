@@ -1,0 +1,86 @@
+
+
+== Section headings ==
+
+''Headings'' organize your writing into
+sections. The ''Wiki'' software can automatically
+generate a [[Help:table of contents|table of contents]] from them.
+
+=== Subsection ===
+Using more "equals" (=) signs creates a subsection.
+
+==== A smaller subsection ====
+
+Don't skip levels, like from two to four equals signs.
+
+Start with 2 equals signs not 1 because 1 creates H1
+tags which should be reserved for page title.
+
+
+* ''Unordered lists'' are easy to do:
+** Start every line with a star.
+*** More stars indicate a deeper level.
+*: Previous item continues.
+** A newline
+* in a list
+marks the end of the list.
+*Of course you can start again.
+
+
+# ''Numbered lists'' are:
+## Very organized
+## Easy to follow
+A newline marks the end of the list.
+# New numbering starts with 1.
+
+Here's a ''definition list'':
+; Word : Definition of the word
+; A longer phrase needing definition
+: Phrase defined
+; A word : Which has a definition
+: Also a second definition
+: And even a third
+
+Begin with a semicolon. One item per line; 
+a newline can appear before the colon, but 
+using a space before the colon improves 
+parsing.
+
+
+* You can even do mixed lists
+*# and nest them
+*# inside each other
+*#* or break lines<br>in lists.
+*#; definition lists
+*#: can be 
+*#:; nested : too
+
+
+: A colon (:) indents a line or paragraph.
+A newline starts a new paragraph.
+Should only be used on talk pages.
+For articles, you probably want the blockquote tag.
+: We use 1 colon to indent once.
+:: We use 2 colons to indent twice.
+::: 3 colons to indent 3 times, and so on.
+
+
+You can make [[w:horizontal dividing line|horizontal dividing line]]s 
+(----) to separate text.
+----
+But you should usually use sections instead,
+so that they go in the table of contents.
+
+
+
+You can add footnotes to sentences using
+the ''ref'' tag -- this is especially good
+for citing a source.
+
+:There are over six billion people in the
+world.<ref>CIA World Factbook, 2006.</ref>
+
+References: <references/>
+
+For details, see [[Wikipedia:Footnotes]] 
+and [[Help:Footnotes]].

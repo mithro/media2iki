@@ -1,0 +1,82 @@
+
+Here's a link to a page named [[Official position]].
+You can even say [[official position]]s
+and the link will show up correctly.
+
+
+You can put formatting around a link.
+Example: ''[[Wikipedia]]''.
+
+
+The ''first letter'' of articles is automatically
+capitalized, so [[wikipedia]] goes to the same place
+as [[Wikipedia]]. Capitalization matters after the
+first letter.
+
+
+[[Intentionally permanent red link]] is a page that doesn't exist
+yet. You could create it by clicking on the link.
+
+
+
+You can link to a page section by its title:
+
+* [[Doxygen#Doxygen Examples]].
+
+If multiple sections have the same title, add
+a number. [[#Example section 3]] goes to the
+third section named "Example section".
+
+
+You can make a link point to a different place
+with a [[Help:Piped link|piped link]]. Put the link
+target first, then the pipe character "|", then
+the link text.
+
+* [[Help:Link|About Links]]
+* [[List of cities by country#Morocco|Cities in Morocco]]
+
+Or you can use the "pipe trick" so that a title that
+contains disambiguation text will appear with more concise
+link text.
+
+* [[Spinning (textiles)|]]
+* [[Boston, Massachusetts|]]
+
+
+You can make an external link just by typing a URL:
+http://www.nupedia.com
+
+You can give it a title:
+[http://www.nupedia.com Nupedia]
+
+Or leave the title blank:
+[http://www.nupedia.com]
+
+External link can be used to link to a wiki page that
+cannot be linked to with <nowiki>[[page]]</nowiki>:
+http://meta.wikimedia.org/w/index.php?title=Fotonotes
+&oldid=482030#Installation
+
+
+Linking to an e-mail address works the same way:
+mailto:someone@example.com or [mailto:someone@example.com someone]
+
+
+[[Help:Category|Category links]] do not show up in line
+but instead at page bottom
+''and cause the page to be listed in the category.''
+[[Category:English documentation]]
+
+Add an extra colon to ''link'' to a category in line
+without causing the page to be listed in the category:
+[[:Category:English documentation]]
+
+
+The Wiki reformats linked dates to match the reader's
+date preferences. These three dates will show up the
+same if you choose a format in your
+[[Special:Preferences|]]:
+* [[1969-07-20]]
+* [[July 20]], [[1969]]
+* [[20 July]] [[1969]]

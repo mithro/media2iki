@@ -1,0 +1,38 @@
+
+A picture, including alternate text:
+
+[[Image:Wiki.png|This is Wiki's logo]]
+
+You can put the image in a frame with a caption:
+[[Image:Wiki.png|frame|This is Wiki's logo]]
+
+
+A link to Wikipedia's page for the image:
+[[:Image:Wiki.png]]
+
+Or a link directly to the image itself:
+[[Media:Wiki.png]]
+
+
+Use '''media:''' links to link
+directly to sounds or videos:
+[[media:Classical guitar scale.ogg|A sound file]]
+
+
+Provide a spoken rendition of some text in a template:
+{{listen
+ |title    = Flow my tears
+ |filename = Flow my tears.ogg
+ |filesize = 583KB
+}}
+
+
+{| border="1" cellspacing="0" cellpadding="5" align="center"
+! This
+! is
+|- 
+| a
+| table
+|}
+
+

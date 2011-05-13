@@ -1,0 +1,257 @@
+
+
+<math>\alpha\,\!</math>
+
+
+{{math|<VAR>&alpha;</VAR>}}
+
+
+<math>\sqrt{2}</math>
+
+
+{{math|{{radical|2}}}}
+
+
+<math>\sqrt{1-e^2}</math>
+
+
+{{math|{{radical|1 − ''e''²}}}}
+
+
+&alpha; &beta; &gamma; &delta; &epsilon; &zeta;
+&eta; &theta; &iota; &kappa; &lambda; &mu; &nu;
+&xi; &omicron; &pi; &rho;  &sigma; &sigmaf;
+&tau; &upsilon; &phi; &chi; &psi; &omega;
+&Gamma; &Delta; &Theta; &Lambda; &Xi; &Pi;
+&Sigma; &Phi; &Psi; &Omega;
+
+
+&int; &sum; &prod; &radic; &minus; &plusmn; &infin;
+&asymp; &prop; {{=}} &equiv; &ne; &le; &ge; 
+&times; &middot; &divide; &part; &prime; &Prime;
+&nabla; &permil; &deg; &there4; &Oslash; &oslash;
+&isin; &notin; 
+&cap; &cup; &sub; &sup; &sube; &supe;
+&not; &and; &or; &exist; &forall; 
+&rArr; &hArr; &rarr; &harr; &uarr; 
+&alefsym; - &ndash; &mdash;
+
+
+<math>
+\acute{a} \grave{a} \hat{a} \tilde{a} \breve{a}
+\check{a} \bar{a} \ddot{a} \dot{a}
+</math>
+
+
+== Standard functions ==
+<math>
+\sin a \cos b \tan c
+\sec d \csc e \cot f
+\arcsin h \arccos i \arctan j
+\sinh k \cosh l \tanh m \coth n\!
+\operatorname{sh}\,o\,\operatorname{ch}\,p\,\operatorname{th}\,q\!
+\operatorname{arsinh}\,r\,\operatorname{arcosh}\,s\,\operatorname{artanh}\,t
+\lim u \limsup v \liminf w \min x \max y\!
+\inf z \sup a \exp b \ln c \lg d \log e \log_{10} f \ker g\!
+\deg h \gcd i \Pr j \det k \hom l \arg m \dim n
+</math>
+
+== Modular arithmetic ==
+
+<math>
+s_k \equiv 0 \pmod{m}
+a\,\bmod\,b
+</math>
+
+== Derivatives ==
+
+<math>
+\nabla \, \partial x \, dx \, \dot x \, \ddot y\, dy/dx\, \frac{dy}{dx}\, \frac{\partial^2 y}{\partial x_1\,\partial x_2}
+</math>
+
+== Sets ==
+
+<math>
+\forall \exists \empty \emptyset \varnothing
+\in \ni \not \in \notin \subset \subseteq \supset \supseteq
+\cap \bigcap \cup \bigcup \biguplus \setminus \smallsetminus
+\sqsubset \sqsubseteq \sqsupset \sqsupseteq \sqcap \sqcup \bigsqcup
+</math>
+
+== Operators ==
+
+<math>
++ \oplus \bigoplus \pm \mp -
+\times \otimes \bigotimes \cdot \circ \bullet \bigodot
+\star * / \div \frac{1}{2}
+</math>
+
+== Logic ==
+
+<math>
+\land (or \and) \wedge \bigwedge \bar{q} \to p
+\lor \vee \bigvee \lnot \neg q \And
+</math>
+
+== Root ==
+
+<math>
+\sqrt{2} \sqrt[n]{x}
+</math>
+
+
+== Relations ==
+
+<math>
+\sim \approx \simeq \cong \dot= \overset{\underset{\mathrm{def}}{}}{=}
+\le < \ll \gg \ge > \equiv \not\equiv \ne \mbox{or} \neq \propto
+\geqq \geqslant \eqslantgtr \gtrsim \gtrapprox
+</math>
+
+== Geometric ==
+
+<math>
+\Diamond \Box \triangle \angle \perp \mid \nmid \| 45^\circ
+
+== Arrows ==
+
+<math>
+\leftarrow (or \gets) \rightarrow (or \to) \nleftarrow \nrightarrow \leftrightarrow \nleftrightarrow \longleftarrow \longrightarrow \longleftrightarrow
+\Leftarrow \Rightarrow \nLeftarrow \nRightarrow \Leftrightarrow \nLeftrightarrow \Longleftarrow \Longrightarrow \Longleftrightarrow (or \iff)
+\uparrow \downarrow \updownarrow \Uparrow \Downarrow \Updownarrow \nearrow \searrow \swarrow \nwarrow
+\rightharpoonup \rightharpoondown \leftharpoonup \leftharpoondown \upharpoonleft \upharpoonright \downharpoonleft \downharpoonright \rightleftharpoons \leftrightharpoons
+\curvearrowleft \circlearrowleft \Lsh \upuparrows \rightrightarrows \rightleftarrows \Rrightarrow \rightarrowtail \looparrowright
+\curvearrowright \circlearrowright \Rsh \downdownarrows \leftleftarrows \leftrightarrows \Lleftarrow \leftarrowtail \looparrowleft
+\mapsto \longmapsto \hookrightarrow \hookleftarrow \multimap \leftrightsquigarrow \rightsquigarrow
+</math>
+
+== Special ==
+
+<math>
+\And \eth \S \P \% \dagger \ddagger \ldots \cdots
+\smile \frown \wr \triangleleft \triangleright \infty \bot \top
+\vdash \vDash \Vdash \models \lVert \rVert \imath \hbar
+\ell \mho \Finv \Re \Im \wp \complement
+\diamondsuit \heartsuit \clubsuit \spadesuit \Game \flat \natural \sharp
+</math>
+
+== Unsorted (new stuff) ==
+
+<math>
+\vartriangle \triangledown \lozenge \circledS \measuredangle \nexists \Bbbk \backprime \blacktriangle \blacktriangledown
+\blacksquare \blacklozenge \bigstar \sphericalangle \diagup \diagdown \dotplus \Cap \Cup \barwedge
+\veebar \doublebarwedge \boxminus \boxtimes \boxdot \boxplus \divideontimes \ltimes \rtimes \leftthreetimes
+\rightthreetimes \curlywedge \curlyvee \circleddash \circledast \circledcirc \centerdot \intercal \leqq \leqslant
+\eqslantless \lessapprox \approxeq \lessdot \lll \lessgtr \lesseqgtr \lesseqqgtr \doteqdot \risingdotseq
+\fallingdotseq \backsim \backsimeq \subseteqq \Subset \preccurlyeq \curlyeqprec \precsim \precapprox \vartriangleleft
+\Vvdash \bumpeq \Bumpeq \eqsim \gtrdot
+\ggg \gtrless \gtreqless \gtreqqless \eqcirc \circeq \triangleq \thicksim \thickapprox \supseteqq
+\Supset \succcurlyeq \curlyeqsucc \succsim \succapprox \vartriangleright \shortmid \shortparallel \between \pitchfork
+\varpropto \blacktriangleleft \therefore \backepsilon \blacktriangleright \because \nleqslant \nleqq \lneq \lneqq
+\lvertneqq \lnsim \lnapprox \nprec \npreceq \precneqq \precnsim \precnapprox \nsim \nshortmid
+\nvdash \nVdash \ntriangleleft \ntrianglelefteq \nsubseteq \nsubseteqq \varsubsetneq \subsetneqq \varsubsetneqq \ngtr
+\subsetneq
+\ngeqslant \ngeqq \gneq \gneqq \gvertneqq \gnsim \gnapprox \nsucc \nsucceq \succneqq
+\succnsim \succnapprox \ncong \nshortparallel \nparallel \nvDash \nVDash \ntriangleright \ntrianglerighteq \nsupseteq
+\nsupseteqq \varsupsetneq \supsetneqq \varsupsetneqq
+\jmath \surd \ast \uplus \diamond \bigtriangleup \bigtriangledown \ominus
+\oslash \odot \bigcirc \amalg \prec \succ \preceq \succeq
+\dashv \asymp \doteq \parallel
+\ulcorner \urcorner \llcorner \lrcorner
+</math>
+
+
+{|
+| Superscript							|| <math>a^2</math>
+|-
+| Subscript							|| <math>a_2</math>
+|-
+| Grouping							|| <math>a^{2+2}</math>
+|-
+| 								|| <math>a_{i,j}</math>
+|-
+| Combining sub & super without and with horizontal separation	|| <math>x_2^3</math>
+|-
+| 								|| <math>{x_2}^3</math>
+|-
+| Super super							|| <math>10^{10^{ \,\!{8} }</math>
+|-
+| Super super							|| <math>10^{10^{ \overset{8}{} }}</math>
+|-
+| Super super (wrong in HTML in some browsers)			|| <math>10^{10^8}</math>
+|-
+| Preceding and/or Additional sub & super			|| <math>\sideset{_1^2}{_3^4}\prod_a^b</math>
+|-
+| 								|| <math>{}_1^2\!\Omega_3^4</math>
+|-
+| Stacking							|| <math>\overset{\alpha}{\omega}</math>
+|-
+| 								|| <math>\underset{\alpha}{\omega}</math>
+|-
+| 								|| <math>\overset{\alpha}{\underset{\gamma}{\omega}}</math>
+|-
+| 								|| <math>\stackrel{\alpha}{\omega}</math>
+|-
+| Derivative (forced PNG)					|| <math>x', y'', f', f''\!</math>
+|-
+| Derivative (f in italics may overlap primes in HTML)		|| <math>x', y'', f', f''</math>
+|-
+| Derivative (wrong in HTML)					|| <math>x^\prime, y^{\prime\prime}</math>
+|-
+| Derivative (wrong in PNG)					|| <math>x\prime, y\prime\prime</math>
+|-
+| Derivative dots						|| <math>\dot{x}, \ddot{x}</math>
+|-
+| Underlines, overlines, vectors				|| <math>\hat a \ \bar b \ \vec c</math>
+|-
+| 								|| <math>\overrightarrow{a b} \ \overleftarrow{c d} \ \widehat{d e f}</math>
+|-
+| 								|| <math>\overline{g h i} \ \underline{j k l}</math>
+|-
+| 								|| <math>\not 1 \ \cancel{123}</math>
+|-
+| Arrows							|| <math>A \xleftarrow{n+\mu-1} B \xrightarrow[T]{n\pm i-1} C</math>
+|-
+| Overbraces							|| <math>\overbrace{ 1+2+\cdots+100 }^{5050}</math>
+|-
+| Underbraces							|| <math>\underbrace{ a+b+\cdots+z }_{26}</math>
+|-
+| Sum								|| <math>\sum_{k=1}^N k^2</math>
+|-
+| Sum (force \textstyle)					|| <math>\textstyle \sum_{k=1}^N k^2</math>
+|-
+| Product							|| <math>\prod_{i=1}^N x_i</math>
+|-
+| Product (force \textstyle)					|| <math>\textstyle \prod_{i=1}^N x_i</math>
+|-
+| Coproduct							|| <math>\coprod_{i=1}^N x_i</math>
+|-
+| Coproduct (force \textstyle)					|| <math>\textstyle \coprod_{i=1}^N x_i</math>
+|-
+| Limit								|| <math>\lim_{n \to \infty}x_n</math>
+|-
+| Limit (force \textstyle)					|| <math>\textstyle \lim_{n \to \infty}x_n</math>
+|-
+| Integral							|| <math>\int\limits_{1}^{3}\frac{e^3/x}{x^2}\, dx</math>
+|-
+| Integral (alternate limits style)				|| <math>\int_{1}^{3}\frac{e^3/x}{x^2}\, dx</math>
+|-
+| Integral (force \textstyle)					|| <math>\textstyle \int\limits_{-N}^{N} e^x\, dx</math>
+|-
+| Integral (force \textstyle, alternate limits style)		|| <math>\textstyle \int_{-N}^{N} e^x\, dx</math>
+|-
+| Double integral						|| <math>\iint\limits_D \, dx\,dy</math>
+|-
+| Triple integral						|| <math>\iiint\limits_E \, dx\,dy\,dz</math>
+|-
+| Quadruple integral						|| <math>\iiiint\limits_F \, dx\,dy\,dz\,dt</math>
+|-
+| Line or path integral						|| <math>\int_C x^3\, dx + 4y^2\, dy</math>
+|-
+| Closed line or path integral					|| <math>\oint_C x^3\, dx + 4y^2\, dy</math>
+|-
+| Intersections							|| <math>\bigcap_1^n p</math>
+|-
+| Unions							|| <math>\bigcup_1^k p</math>
+|}
+

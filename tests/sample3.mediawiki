@@ -1,0 +1,7 @@
+You can break lines<br/>
+without a new paragraph.<br/>
+Please use this sparingly.
+
+Please do not start a link or
+''italics'' or '''bold''' text on one line
+and end on the next.
