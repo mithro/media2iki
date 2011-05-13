@@ -81,18 +81,7 @@ class BaseConverter(object):
     elif node.caption == ':':
       # If not part of an definition list, it's an indent...
       if not hasattr(self, 'dls'):
-        parser = MarkdownConverter()
-        parser.parse_children(node)
-        output = parser.getvalue()
-
-        lines = []
-        for line in output.split('\n'):
-          if line:
-            lines.append("> "*len(node.caption)+line)
-          else:
-            lines.append(line)
-        self.append("\n".join(lines))
-
+        self.on_blockquote(node)
       else:
         self.dls.append(node)
 
@@ -167,6 +156,7 @@ class HTMLConverter(BaseConverter):
     self.append("<p>")
     self.parse_children(node)
     self.append("</p>")
+    self.produce_dls()
 
   def on_italics(self, node):
     self.append("<em>")
@@ -213,12 +203,6 @@ class HTMLConverter(BaseConverter):
       node.caption = node.target
       self.on_url(node)
 
-  def on_p(self, node):
-    self.append("<p>")
-    self.parse_children(node)
-    self.append("</p>")
-    self.produce_dls()
-
   def produce_dls(self):
     # We need to specially handle defintion lists
     if hasattr(self, "dls"):
@@ -263,6 +247,19 @@ class MarkdownConverter(BaseConverter):
     sys.stdout = sys_stdout
     sys.stderr.write(ast_str.getvalue())
     self.parse_node(ast)
+
+  def on_blockquote(self, node):
+    parser = MarkdownConverter()
+    parser.parse_children(node)
+    output = parser.getvalue()
+
+    lines = []
+    for line in output.split('\n'):
+      if line:
+        lines.append("> "*len(node.caption)+line)
+      else:
+        lines.append(line)
+    self.append("\n".join(lines))
 
   def on_preformatted(self, node):
     parser = MarkdownConverter()
@@ -317,7 +314,6 @@ class MarkdownConverter(BaseConverter):
           self.append('</dd>\n')
 
       self.append("</dl>\n")
-    self.append('\n')
 
   def on_italics(self, node):
     self.append("_")
@@ -383,11 +379,44 @@ class MarkdownConverter(BaseConverter):
   def on_li(self, node):
     listmode = {'order': '1.', 'unorder': '*'}
 
+    # mediawiki format looks like the following:
+    # * List item A
+    # *: More list item A
+    #   which mwlib converts to
+    # Item tagname='li'->'li'
+    #  Node lineprefix=
+    #   u' List item A'
+    #   u'\n'
+    #  Style':'
+    #   Node
+    #    Node lineprefix=
+    #     Paragraph tagname='p'->'p'
+    #      u'More list item A'
+    #
+    # So we need to strip out the Style elements
+    children = [node.children[0]]
+    for child in node.children[1:]:
+      if isinstance(child, nodes.Style) and child.caption == ':':
+        children += child.children
+      else:
+        children.append(child)
+    node.children = children
+
     parser = MarkdownConverter()
     parser.parse_children(node)
-    output = parser.getvalue().split('\n')
+    output = parser.getvalue()
+
+    if not output.strip():
+      return
+
+    # Strip a leading space (from the following)
+    # *> <test
+    if output and output[0] == ' ':
+      output = output[1:]
 
     indent = '    '*(len(self.listmode)-1)
+
+    output = output.split('\n')
 
     lines = ["%s%s %s" % (
         indent, listmode[self.listmode[-1]], output[0].lstrip())]
@@ -433,14 +462,17 @@ class MarkdownConverter(BaseConverter):
 
         width = widths[i]
 
+        rendered = unicode(cell['rendered'], 'utf-8').strip()
+        rendered = "<br>".join(rendered.split('\n'))
+
         if align == 'right':
-          f = unicode(cell['rendered'], 'utf-8').strip().rjust
+          f = rendered.rjust
           divider += '-'*(width-1) + ':'
         elif align == 'center' or align == 'centre':
-          f = unicode(cell['rendered'], 'utf-8').strip().center
+          f = rendered.center
           divider += ':' + '-'*(width-2) + ':'
         elif align == 'left':
-          f = unicode(cell['rendered'], 'utf-8').strip().ljust
+          f = rendered.ljust
           divider += '-'*width
         else:
           assert False, 'Unknown alignment %s (%s)' % (cell['align'], cell)
