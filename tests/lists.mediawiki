@@ -1,0 +1,77 @@
+
+* Lists are easy to do:
+** start every line
+* with a star
+** more stars mean
+*** deeper levels
+
+*A newline
+*in a list
+marks the end of the list.
+Of course
+*you can
+*start again.
+
+# Numbered lists are good
+## very organized
+## easy to follow
+
+* You can also
+**break lines
+**like this
+
+; Definition lists
+; item : definition
+; semicolon plus term
+: colon plus definition
+
+* Or create mixed lists
+*# and nest them
+*#* like this
+*#*; definitions
+*#*: work:
+*#*; apple
+*#*; banana
+*#*: fruits
+
+<ol>
+  <li>list item A1
+    <ol>
+      <li>list item B1</li>
+      <li>list item B2</li>
+    </ol>continuing list item A1
+  </li>
+  <li>list item A2</li>
+</ol>
+
+#list item A1
+##list item B1
+##list item B2
+#:continuing list item A1
+#list item A2
+
+#list item A1
+##list item B1
+###list item C1
+##:continuing list item B1
+##list item B2
+#list item A2
+
+:#abc
+:#def
+:#ghi
+
+
+<ul>
+  <ol>
+    <li>abc</li>
+    <li>def</li>
+    <li>ghi</li>
+  </ol>
+</ul
+
+<ul>
+#abc
+#def
+#ghi
+</ul>

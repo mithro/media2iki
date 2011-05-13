@@ -1,0 +1,103 @@
+
+
+[[a]]
+Result `a`, target `a`
+
+[[a b]]
+Result `a b`, target `a b`
+
+[[a b|c d]]
+Result `c d`, target `a b`
+
+[[a b]]c
+Result `a bc`, target `a b`
+
+<nowiki>[[a]]</nowiki>
+Result `[[a]]`, not a link
+
+[[a (b)|]]  -->  [[a (b)|a]]
+Result `a`, target `a (b)`
+
+[[a, b|]]  -->  [[a, b|a]]
+Result `a`, target `a, b`
+
+[[w:a|]]  -->  [[w:a|a]]
+Result `a`, target `w:a`
+
+[[w:a (b)|]]  -->  [[w:a (b)|a]]
+Result `a`, target `w:a (b)`
+
+[[mediawiki:1movedto2|]]
+Result `mediawiki:1movedto2`, target `Mediawiki:1movedto2`
+
+[[mediawiki:1movedto3|]]
+Result `mediawiki:1movedto3`, target `Mediawiki:1movedto3`
+
+[[a|b|c]]
+Result `b|c`, target `a`
+
+[[a|b]]c
+Result `bc`, target `a`
+
+a[[b]]
+Result a`b`, target `b`
+
+[[a]]<nowiki>b</nowiki>
+Result `a`b, target `a`
+
+[[a]]'''b'''
+Result `a`b, target `a`
+
+[[a|b]]c<nowiki>d</nowiki>
+Result `bc`d, target `a`
+
+[[a]][[b]]
+Result `ab`, target `a` `b`
+
+
+[[wikipedia:Main Page]] links to the main page of the English Wikipedia
+
+[http://www.example.org link name]  -->  `link name`
+
+[http://www.example.org] --> `[1]`
+
+http://www.example.org -->  `http://www.example.org`
+
+<nowiki>http://www.example.org</nowiki> --> no link http://www.example.org
+
+[mailto:anyone@example.org address name] --> `address name`
+
+[mailto:anyone@example.org] --> `[2]`
+
+[mailto:anyone@example.org?cc=anyone2@example.org address name] --> `address name`
+
+[[Help:Editing#Links]]
+
+[[m:Help:Editing#Links]]
+
+http://meta.wikimedia.org/wiki/Help:Editing#Links
+
+*[[project:a (b)|]]
+*[[w:project:a (b)|]]
+*[[:de:project:a (b)|]]
+*[[wiktionary:project:a (b)|]]
+*[[wiktionary:de:project:a (b)|]]
+*[[wikibooks:project:a (b)|]]
+*[[wikiquote:project:a (b)|]]
+*[[wikisource:project:a (b)|]]
+*[[w:en:{{FULLPAGENAME}}|]] [[w:en:{{FULLPAGENAME}}|en:{{FULLPAGENAME}}]]
+*[[m:{{FULLPAGENAME}}|]] [[m:{{FULLPAGENAME}}|{{FULLPAGENAME}}]]
+
+* a
+* project:a
+* project:a
+* project:a
+* de:project:a
+* project:a
+* project:a
+* project:a
+* <no wiki>[[w:en:Help:Piped link|]]</no wiki> en:Help:Piped link
+* <no wiki>[[m:Help:Piped link|]]</no wiki> Help:Piped link
+
+
+

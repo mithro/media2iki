@@ -1,0 +1,130 @@
+
+Simple table without caption:
+
+{|
+!align="right" | Right
+!align="left"  | Left
+!align="center"| Center
+! Default
+|-
+| 12 || 12 || 12 || 12
+|-
+| 123 || 123 || 123 || 123
+|-
+| 1 || 1 || 1 || 1
+|}
+
+
+Simple table with caption:
+
+{|
+|+ Demonstration of simple table syntax.
+!align="right" | Right
+!align="left"  | Left
+!align="center"| Center
+! Default
+|-
+| 12 || 12 || 12 || 12
+|-
+| 123 || 123 || 123 || 123
+|-
+| 1 || 1 || 1 || 1
+|}
+
+
+Simple table indented:
+
+: {|
+: |+ Demonstration of simple table syntax.
+: !align="right" | Right
+: !align="left"  | Left
+: !align="center"| Center
+: ! Default
+: |-
+: | 12 || 12 || 12 || 12
+: |-
+: | 123 || 123 || 123 || 123
+: |-
+: | 1 || 1 || 1 || 1
+: |}
+
+
+Simple table under a list:
+
+* List item
+*: {|
+*: |+ Demonstration of simple table syntax.
+*: !align="right" | Right
+*: !align="left"  | Left
+*: !align="center"| Center
+*: ! Default
+*: |-
+*: | 12 || 12 || 12 || 12
+*: |-
+*: | 123 || 123 || 123 || 123
+*: |-
+*: | 1 || 1 || 1 || 1
+*: |}
+
+
+Table with multiline caption:
+
+'''Not supported in medawiki markup'''
+
+
+Table with multiline row:
+
+'''Not supported in medawiki markup'''
+
+
+Table without column headers:
+
+{|
+| 12 || 12 || 12 || 12
+|-
+| 123 || 123 || 123 || 123
+|-
+| 1 || 1 || 1 || 1
+|}
+
+Table without column headers but with caption:
+
+{|
+|+ Demonstration of simple table syntax.
+| 12 || 12 || 12 || 12
+|-
+| 123 || 123 || 123 || 123
+|-
+| 1 || 1 || 1 || 1
+|}
+
+Multiline table without column headers:
+
+'''Not supported in medawiki markup'''
+
+Nested tables:
+
+{| border="1"
+| &alpha;
+| style="text-align: center;"| cell2
+{| 
+| NESTED
+|-
+| TABLE
+|}
+| style="vertical-align:bottom;"| the original table again
+| style="width:100px;" |
+{|
+| A
+|}
+{|
+| B || B
+|}
+| style="width:50px;" |
+{|
+| C
+|}
+{|
+| D
+|}
+|}
