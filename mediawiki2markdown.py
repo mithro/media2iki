@@ -27,14 +27,24 @@ class options:
 parser = optparse.OptionParser()
 parser.add_option(
   "-f", "--file", dest="file",
-  help="wikimedia FILE to read", metavar="FILE")
+  help="wikimedia FILE to read.", metavar="FILE")
 parser.add_option(
   "-d", "--debugger", dest="DEBUGGER", action="store_true",
   default=sys.stdout.isatty() and sys.stdin.isatty(),
-  help="Drop to Python PDB debugger on an error")
+  help="Drop to Python PDB debugger on an error.")
+parser.add_option(
+  "--no-debugger", dest="DEBUGGER", action="store_false",
+  default=sys.stdout.isatty() and sys.stdin.isatty(),
+  help="Don't drop to Python PDB debugger on an error.")
 parser.add_option(
   "-s", "--strict", dest="STRICT", action="store_true", default=options.STRICT,
-  help="Error on known tags, style or other problems")
+  help="Error on known tags, style or other problems.")
+parser.add_option(
+  "--no-strict", dest="STRICT", action="store_false", default=options.STRICT,
+  help="Error on known tags, style or other problems.")
+parser.add_option(
+  "-l", "--lenient", dest="STRICT", action="store_true", default=options.STRICT,
+  help="Don't error on known tags, style or other problems.")
 
 
 def debugger():
