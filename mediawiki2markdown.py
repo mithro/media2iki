@@ -42,7 +42,8 @@ class BaseConverter(object):
     except AttributeError, e:
       sys.stderr.write('Unknown node: '+(node.tagname or node.__class__.__name__.lower()))
       debugger()
-    except:
+    except Exception, e:
+      sys.stderr.write('Unexpected exception: %s\n' % type(e))
       debugger()
 
   def parse_children(self, node):
