@@ -17,10 +17,20 @@ from mwlib.uparser import simpleparse
 from mwlib.parser import nodes
 
 
+# Should we drop to the debugger on error
+DEBUGGER = sys.stdout.isatty() and sys.stdin.isatty()
+# Should we die on unknown flags
+STRICT = True
 
-DEBUG = sys.stdout.isatty() and sys.stdin.isatty()
 def debugger():
-  if DEBUG:
+  if DEBUGGER:
+    # Flush the output to make sure we see the latest errors/output
+    sys.stderr.write('\n\n')
+    sys.stderr.flush()
+
+    sys.stdout.write('\n\n')
+    sys.stdout.flush()
+
     import traceback, pdb
     type, value, tb = sys.exc_info()
     pdb.post_mortem(tb)
@@ -51,10 +61,7 @@ class BaseConverter(object):
       f(node)
     except AttributeError, e:
       sys.stderr.write('Unknown node: '+(node.tagname or node.__class__.__name__.lower()))
-      debugger()
-    except Exception, e:
-      sys.stderr.write('Unexpected exception: %s\n' % type(e))
-      debugger()
+      assert not STRICT
 
   def parse_children(self, node):
     for child in node.children:
@@ -110,6 +117,7 @@ class BaseConverter(object):
 
     else:
       sys.stderr.write("Unknown style: %s\n" % node.caption)
+      assert not STRICT
 
   def on_underline(self, node):
     self.append("<u>")
@@ -448,6 +456,7 @@ class MarkdownConverter(BaseConverter):
       self.append('<br>')
     else:
       sys.stderr.write( "Unknown tag %s %s\n" % (node, node.caption))
+      assert not STRICT
 
   def on_process_table(self, caption, widths, rows):
     if caption:
@@ -512,9 +521,12 @@ def main(infile=None):
 
   mediawiki = infile.read()
 
-  c = MarkdownConverter()
-  c.parse(mediawiki)
-  print c.out
+  try:
+    c = MarkdownConverter()
+    c.parse(mediawiki)
+    print c.out
+  except:
+    debugger()
 
 
 if __name__ == "__main__":
