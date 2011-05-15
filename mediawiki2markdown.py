@@ -98,7 +98,7 @@ class BaseConverter(object):
       self.on_underline(node)
 
     else:
-      assert False, "Unknown style: %s" % node.caption
+      sys.stderr.write("Unknown style: %s\n" % node.caption)
 
   def on_underline(self, node):
     self.append("<u>")
@@ -434,7 +434,7 @@ class MarkdownConverter(BaseConverter):
     elif node.caption == 'br':
       self.append('<br>')
     else:
-      assert False, "Unknown tag %s %s" % (node, node.caption)
+      sys.stderr.write( "Unknown tag %s %s\n" % (node, node.caption))
 
   def on_process_table(self, caption, widths, rows):
     if caption:
