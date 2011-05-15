@@ -247,7 +247,7 @@ class MarkdownConverter(BaseConverter):
     sys_stdout = sys.stdout
     ast_str = StringIO.StringIO()
     sys.stdout = ast_str
-    ast = simpleparse(text)
+    ast = simpleparse(text.decode('utf-8'))
     sys.stdout = sys_stdout
     sys.stderr.write(ast_str.getvalue())
     self.parse_node(ast)
