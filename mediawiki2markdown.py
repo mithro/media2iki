@@ -249,7 +249,6 @@ class MarkdownConverter(BaseConverter):
     sys.stdout = ast_str
     ast = simpleparse(text.decode('utf-8'))
     sys.stdout = sys_stdout
-    sys.stderr.write(ast_str.getvalue())
     self.parse_node(ast)
 
   def on_blockquote(self, node):
