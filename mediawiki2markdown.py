@@ -10,6 +10,7 @@ It takes a file as an argument and outputs the markdown text to stdout.
 
 # stdlib imports
 import cStringIO as StringIO
+import optparse
 import sys
 
 # External module imports
@@ -17,13 +18,27 @@ from mwlib.uparser import simpleparse
 from mwlib.parser import nodes
 
 
-# Should we drop to the debugger on error
-DEBUGGER = sys.stdout.isatty() and sys.stdin.isatty()
-# Should we die on unknown flags
-STRICT = True
+class options:
+  # Should we drop to the debugger on error
+  DEBUGGER = False
+  # Should we die on unknown flags
+  STRICT = True
+
+parser = optparse.OptionParser()
+parser.add_option(
+  "-f", "--file", dest="file",
+  help="wikimedia FILE to read", metavar="FILE")
+parser.add_option(
+  "-d", "--debugger", dest="DEBUGGER", action="store_true",
+  default=sys.stdout.isatty() and sys.stdin.isatty(),
+  help="Drop to Python PDB debugger on an error")
+parser.add_option(
+  "-s", "--strict", dest="STRICT", action="store_true", default=options.STRICT,
+  help="Error on known tags, style or other problems")
+
 
 def debugger():
-  if DEBUGGER:
+  if options.DEBUGGER:
     # Flush the output to make sure we see the latest errors/output
     sys.stderr.write('\n\n')
     sys.stderr.flush()
@@ -61,7 +76,7 @@ class BaseConverter(object):
       f(node)
     except AttributeError, e:
       sys.stderr.write('Unknown node: '+(node.tagname or node.__class__.__name__.lower()))
-      assert not STRICT
+      assert not options.STRICT
 
   def parse_children(self, node):
     for child in node.children:
@@ -117,7 +132,7 @@ class BaseConverter(object):
 
     else:
       sys.stderr.write("Unknown style: %s\n" % node.caption)
-      assert not STRICT
+      assert not options.STRICT
 
   def on_underline(self, node):
     self.append("<u>")
@@ -456,7 +471,7 @@ class MarkdownConverter(BaseConverter):
       self.append('<br>')
     else:
       sys.stderr.write( "Unknown tag %s %s\n" % (node, node.caption))
-      assert not STRICT
+      assert not options.STRICT
 
   def on_process_table(self, caption, widths, rows):
     if caption:
@@ -513,11 +528,16 @@ class MarkdownConverter(BaseConverter):
         header = row
 
 
-def main(infile=None):
-  if infile is None:
-    infile = sys.stdin
+def main(argv):
+  global options
+  (options, args) = parser.parse_args(argv)
+
+  if options.file:
+    infile = file(options.file)
+  elif args:
+    infile = file(args[0])
   else:
-    infile = file(infile)
+    infile = sys.stdin
 
   mediawiki = infile.read()
 
@@ -530,4 +550,4 @@ def main(infile=None):
 
 
 if __name__ == "__main__":
-  main(*sys.argv[1:])
+  main(sys.argv[1:])
