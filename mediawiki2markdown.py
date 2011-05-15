@@ -1,12 +1,22 @@
 #!/usr/bin/python
 #
+# -*- coding: utf-8 -*-
+# vim: set ts=2 sw=2 et sts=2 ai: 
 
+"""This program converts mediawiki format to markdown.
+
+It takes a file as an argument and outputs the markdown text to stdout.
+"""
+
+# stdlib imports
+import cStringIO as StringIO
+import sys
+
+# External module imports
 from mwlib.uparser import simpleparse
 from mwlib.parser import nodes
 
-import cStringIO as StringIO
 
-import sys
 
 DEBUG = sys.stdout.isatty() and sys.stdin.isatty()
 def debugger():
